@@ -1,16 +1,27 @@
-// File: app/api/verify-turnstile/route.js
+// app/api/verify-turnstile/route.js
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
-  const { token } = await request.json();
   const secretKey = process.env.TURNSTILE_SECRET_KEY;
+
+  if (!secretKey) {
+    console.error('CRITICAL: TURNSTILE_SECRET_KEY is not set in environment variables.');
+    return NextResponse.json({ 
+      success: false, 
+      message: 'Server configuration error: Missing secret key.' 
+    }, { status: 500 });
+  }
+
+  let token;
+  try {
+    const body = await request.json();
+    token = body.token;
+  } catch (error) {
+    return NextResponse.json({ success: false, message: 'Invalid request body.' }, { status: 400 });
+  }
 
   if (!token) {
     return NextResponse.json({ success: false, message: 'CAPTCHA token not provided.' }, { status: 400 });
-  }
-  if (!secretKey) {
-    console.error('TURNSTILE_SECRET_KEY is not set. Please check your .env.local file.');
-    return NextResponse.json({ success: false, message: 'Server configuration error.' }, { status: 500 });
   }
 
   const formData = new FormData();
@@ -19,7 +30,7 @@ export async function POST(request) {
 
   // Optional: include the user's IP address
   // Recommended by Cloudflare for better security.
-  const ip = request.ip || request.headers.get('x-forwarded-for');
+  const ip = request.headers.get('x-forwarded-for') || request.ip; // Vercel sets x-forwarded-for
   if (ip) {
     formData.append('remoteip', ip);
   }
@@ -38,14 +49,17 @@ export async function POST(request) {
     } else {
       // Token is invalid
       console.log('Turnstile verification failed:', data);
-      return NextResponse.json({ 
-        success: false, 
-        message: 'CAPTCHA verification failed.', 
-        'error-codes': data['error-codes'] || ['unknown-error'] 
+      return NextResponse.json({
+        success: false,
+        message: 'CAPTCHA verification failed.',
+        'error-codes': data['error-codes'] || ['unknown-error']
       }, { status: 400 });
     }
   } catch (error) {
-    console.error('Error verifying Turnstile token:', error);
-    return NextResponse.json({ success: false, message: 'Error verifying CAPTCHA token.' }, { status: 500 });
+    console.error('Error verifying Turnstile token with Cloudflare:', error);
+    return NextResponse.json({ 
+      success: false, 
+      message: 'Server error during CAPTCHA verification.' 
+    }, { status: 500 });
   }
 }
