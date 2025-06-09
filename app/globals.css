@@ -1,1 +1,5 @@
 @import "tailwindcss";
+
+html {
+  scroll-padding-top: 80px; /* Corresponds to navbar h-20 (5rem = 80px if 1rem=16px) */
+}

@@ -6,7 +6,6 @@ import AnimatedSection from '../AnimatedSection';
 
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
-
 // Import Swiper modules
 import { Autoplay, Pagination, A11y } from 'swiper/modules';
 
@@ -58,6 +57,7 @@ const categoriesData = [
 const ShopOurPicksSection = () => {
   return (
     <AnimatedSection
+      id="shop-our-picks" // Added ID for navbar link
       className="py-16 sm:py-24 bg-gray-50 overflow-hidden"
       direction="up"
     >
@@ -70,7 +70,6 @@ const ShopOurPicksSection = () => {
             Explore our curated selection.
           </p>
         </div>
-
         <Swiper
           modules={[Autoplay, Pagination, A11y]}
           spaceBetween={24}
@@ -119,7 +118,7 @@ const ShopOurPicksSection = () => {
                       </h3>
                     </div>
                     <span className="mt-2 text-sm text-primary font-medium group-hover:underline self-start">
-                      Shop Now →
+                      Shop Now!
                     </span>
                   </div>
                 </Link>

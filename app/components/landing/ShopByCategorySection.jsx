@@ -1,3 +1,4 @@
+// ----- File: app/components/landing/ShopByCategorySection.jsx -----
 // app/components/landing/ShopByCategorySection.jsx
 'use client';
 import AnimatedSection from '../AnimatedSection';
@@ -13,7 +14,11 @@ const categories = [
 
 const ShopByCategorySection = () => {
   return (
-    <AnimatedSection className="py-16 sm:py-24 bg-white" direction="up">
+    <AnimatedSection 
+      id="shop-by-category" // Added ID for navbar link
+      className="py-16 sm:py-24 bg-white" 
+      direction="up"
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
@@ -27,7 +32,7 @@ const ShopByCategorySection = () => {
           {categories.map((category) => (
             <Link
               key={category.name}
-              href={category.href}
+              href={category.href} // These links go to actual category pages
               className={`group flex flex-col items-center justify-center p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${category.color} hover:brightness-95`}
             >
               <div className="mb-4 p-4 rounded-full bg-white/50 shadow-md">
@@ -45,3 +50,4 @@ const ShopByCategorySection = () => {
 };
 
 export default ShopByCategorySection;
+// ----- End of File: app/components/landing/ShopByCategorySection.jsx -----

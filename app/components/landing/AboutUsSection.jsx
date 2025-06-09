@@ -1,4 +1,5 @@
 // ----- File: app/components/landing/AboutUsSection.jsx -----
+// app/components/landing/AboutUsSection.jsx
 'use client';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -34,7 +35,11 @@ const AboutUsSection = () => {
   ];
 
   return (
-    <AnimatedSection className="py-16 sm:py-24 bg-white" direction="left">
+    <AnimatedSection 
+      id="about-us" // Added ID for navbar link
+      className="py-16 sm:py-24 bg-white" 
+      direction="left"
+    >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16 xl:gap-20">
           {/* Left Column: Image */}
@@ -68,10 +73,13 @@ const AboutUsSection = () => {
               Welcome to <span className="text-primary">Sathi Mart</span>
             </h2>
             <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-              At Sathi Mart, we are committed to providing our community with a wide selection of quality products at affordable prices. From fresh groceries and household essentials to the latest cosmetics and local favorites, we strive to be your trusted one-stop shop. Our friendly staff is always here to help you find what you need.
+              At Sathi Mart, we are committed to providing our community with a wide selection of quality products at
+              affordable prices. From fresh groceries and household essentials to the latest cosmetics and local favorites, we
+              strive to be your trusted one-stop shop. Our friendly staff is always here to help you find what you need.
             </p>
             <p className="text-lg text-gray-700 mb-10 leading-relaxed">
-              We believe in quality, variety, and a shopping experience that feels like home. Come visit us and discover the Sathi Mart difference!
+              We believe in quality, variety, and a shopping experience that feels like home. Come visit us and discover
+              the Sathi Mart difference!
             </p>
 
             {/* Enhanced Contact Info Section */}
@@ -85,7 +93,7 @@ const AboutUsSection = () => {
                     </div>
                     <div>
                       <h4 className="text-md font-semibold text-gray-800">{item.label}</h4>
-                      {item.href ? (
+                      {item.href? (
                         <a
                           href={item.href}
                           target="_blank"

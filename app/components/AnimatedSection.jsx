@@ -1,9 +1,10 @@
+// ----- File: app/components/AnimatedSection.jsx -----
 // app/components/AnimatedSection.jsx
 'use client'; // Framer Motion components are client components
 
 import { motion } from 'framer-motion';
 
-const AnimatedSection = ({ children, className, delay = 0, direction = "up" }) => {
+const AnimatedSection = ({ children, className, delay = 0, direction = "up", id, ...rest }) => {
   const variants = {
     hidden: {
       opacity: 0,
@@ -24,11 +25,13 @@ const AnimatedSection = ({ children, className, delay = 0, direction = "up" }) =
 
   return (
     <motion.section
+      id={id} // Apply the id prop here
       className={className}
       variants={variants}
       initial="hidden"
       whileInView="visible" // Animate when the section scrolls into view
       viewport={{ once: true, amount: 0.2 }} // Trigger once, when 20% is visible
+      {...rest} // Spread any other props
     >
       {children}
     </motion.section>
@@ -36,3 +39,4 @@ const AnimatedSection = ({ children, className, delay = 0, direction = "up" }) =
 };
 
 export default AnimatedSection;
+// ----- End of File: app/components/AnimatedSection.jsx -----

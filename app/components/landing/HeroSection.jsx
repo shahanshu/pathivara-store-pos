@@ -8,6 +8,7 @@ import Link from 'next/link';
 const HeroSection = () => {
   return (
     <section
+      id="hero-section" // Added ID for navbar link
       className="min-h-screen flex flex-col md:flex-row items-stretch" // Main container, flex column on mobile, row on md+
       // style={{ paddingTop: '80px' }} // REMOVED: No longer needed as navbar is transparent initially
     >
@@ -49,10 +50,8 @@ const HeroSection = () => {
             className="flex justify-center md:justify-start" // Align button
           >
             <Link
-              href="/shop"
-              className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-500 text-gray-900
-                         font-semibold py-3 px-6 sm:py-4 sm:px-10 rounded-lg text-base sm:text-lg shadow-lg
-                         transition-all duration-300 transform hover:scale-105"
+              href="/shop" // This can remain /shop if you have a dedicated shop page, or change to a section ID if "Shop Now" means a specific part of the landing page
+              className="inline-flex items-center justify-center bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-semibold py-3 px-6 sm:py-4 sm:px-10 rounded-lg text-base sm:text-lg shadow-lg transition-all duration-300 transform hover:scale-105"
             >
               Shop Now <FiArrowRight className="ml-2 sm:ml-3 h-5 w-5" />
             </Link>
