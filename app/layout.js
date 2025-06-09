@@ -1,7 +1,7 @@
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
-
+import { AuthProvider } from './contexts/AuthContext'; 
 export const metadata = {
   title: {
     default: "My Awesome Department Store",
@@ -18,12 +18,13 @@ export const metadata = {
     description: 'Discover a wide range of products at My Awesome Department Store.',
   },
 };
-
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} scroll-smooth`}>
       <body className="font-sans bg-gray-50 text-gray-800 antialiased">
-        {children}
+        <AuthProvider> {/* Wrap with AuthProvider */}
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );

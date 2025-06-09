@@ -12,6 +12,7 @@
     "@marsidev/react-turnstile": "^1.1.0",
     "@react-three/drei": "^10.1.2",
     "@react-three/fiber": "^9.1.2",
+    "firebase": "^11.9.0",
     "framer-motion": "^12.16.0",
     "geist": "^1.4.2",
     "next": "15.3.3",
