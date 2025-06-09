@@ -9,7 +9,7 @@ const HeroSection = () => {
   return (
     <section
       className="min-h-screen flex flex-col md:flex-row items-stretch" // Main container, flex column on mobile, row on md+
-      style={{ paddingTop: '80px' }} // Add padding top for the fixed navbar height (adjust if navbar height changes)
+      // style={{ paddingTop: '80px' }} // REMOVED: No longer needed as navbar is transparent initially
     >
       {/* Left Column - Image */}
       <div className="md:w-1/2 w-full min-h-[70vh] md:min-h-full relative overflow-hidden">
