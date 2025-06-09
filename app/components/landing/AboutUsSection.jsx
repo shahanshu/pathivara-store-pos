@@ -2,61 +2,62 @@
 // app/components/landing/AboutUsSection.jsx
 'use client';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import Image from 'next/image'; // Make sure Image is imported
 import AnimatedSection from '../AnimatedSection';
 import { FiMapPin, FiPhone, FiMail, FiClock } from 'react-icons/fi';
 
 const AboutUsSection = () => {
   const contactDetails = [
     {
-      icon: <FiMapPin className="w-6 h-6 text-primary" />, // Slightly larger icon
+      icon: <FiMapPin className="w-6 h-6 text-primary" />,
       label: 'Visit Us',
-      text: '123 Main Street, Your City, State 12345',
+      text: 'Dharan -08, Sunsari, Nepal',
       href: 'https://maps.google.com/?q=123+Main+Street,+Your+City',
     },
     {
       icon: <FiPhone className="w-6 h-6 text-primary" />,
       label: 'Call Us',
-      text: '+1 (555) 123-4567',
+      text: '9745245005',
       href: 'tel:+15551234567',
     },
     {
       icon: <FiMail className="w-6 h-6 text-primary" />,
       label: 'Email Us',
-      text: 'info@sathimart.com',
+      text: 'milanshrestha9801@gmail.com',
       href: 'mailto:info@sathimart.com',
     },
     {
       icon: <FiClock className="w-6 h-6 text-primary" />,
       label: 'Opening Hours',
-      text: 'Mon - Sat: 9:00 AM - 8:00 PM',
-      // No href for hours
+      text: '7 Days : 07:30 AM - 09:30 PM',
     },
   ];
 
   return (
-    <AnimatedSection 
-      id="about-us" // Added ID for navbar link
-      className="py-16 sm:py-24 bg-white" 
+    <AnimatedSection
+      id="about-us"
+      className="py-16 sm:py-24 bg-white"
       direction="left"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16 xl:gap-20">
           {/* Left Column: Image */}
           <motion.div
-            className="w-full lg:w-5/12" // Adjusted width slightly for potentially more text space
+            className="w-full lg:w-5/12"
             initial={{ opacity: 0, x: -50 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
-            <div className="relative aspect-[4/5] sm:aspect-square rounded-xl shadow-2xl overflow-hidden group"> {/* Aspect ratio can be adjusted */}
+            <div className="relative aspect-[4/5] sm:aspect-square rounded-xl shadow-2xl overflow-hidden group">
               <Image
                 src="/images/sathimart.jpg"
                 alt="Sathi Mart store front"
-                layout="fill"
-                objectFit="cover"
-                className="transition-transform duration-500 group-hover:scale-105"
+                fill // MODIFIED: Replaced layout="fill" with fill
+                // objectFit="cover" // REMOVED: objectFit prop is legacy
+                // MODIFIED: Apply object-fit via className
+                className="transition-transform duration-500 group-hover:scale-105 object-cover"
+                sizes="(max-width: 1023px) 90vw, 40vw" // Keep the sizes prop, adjust as needed
               />
             </div>
           </motion.div>

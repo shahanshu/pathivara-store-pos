@@ -2,7 +2,7 @@
 // app/components/landing/ShopByCategorySection.jsx
 'use client';
 import AnimatedSection from '../AnimatedSection';
-import Link from 'next/link';
+// import Link from 'next/link'; // Link component is no longer used directly for navigation here
 import { FiBox, FiSmartphone, FiHome, FiWatch } from 'react-icons/fi';
 
 const categories = [
@@ -14,9 +14,9 @@ const categories = [
 
 const ShopByCategorySection = () => {
   return (
-    <AnimatedSection 
-      id="shop-by-category" // Added ID for navbar link
-      className="py-16 sm:py-24 bg-white" 
+    <AnimatedSection
+      id="shop-by-category"
+      className="py-16 sm:py-24 bg-white"
       direction="up"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -30,10 +30,13 @@ const ShopByCategorySection = () => {
         </div>
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
-            <Link
+            // MODIFIED: Changed from Link to div to make it non-navigable
+            // while preserving styles and hover effects.
+            <div
               key={category.name}
-              href={category.href} // These links go to actual category pages
               className={`group flex flex-col items-center justify-center p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${category.color} hover:brightness-95`}
+              // onClick={(e) => e.preventDefault()} // Not strictly necessary for a div, but harmless
+              style={{ cursor: 'default' }} // Optional: Visual cue that it's not clickable for navigation
             >
               <div className="mb-4 p-4 rounded-full bg-white/50 shadow-md">
                 {category.icon}
@@ -41,7 +44,7 @@ const ShopByCategorySection = () => {
               <h3 className="text-xl font-semibold text-gray-800 group-hover:text-gray-900 transition-colors">
                 {category.name}
               </h3>
-            </Link>
+            </div>
           ))}
         </div>
       </div>
