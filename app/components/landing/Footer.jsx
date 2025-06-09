@@ -1,3 +1,4 @@
+// ----- File: app/components/landing/Footer.jsx -----
 // app/components/landing/Footer.jsx
 'use client';
 import Link from 'next/link';
@@ -25,7 +26,14 @@ const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div>
-            <h3 className="text-xl font-semibold text-white mb-4">Store<span className="text-secondary">Logo</span></h3>
+            {/* Footer Logo */}
+            <Link href="/" className="inline-block mb-4">
+              <img
+                src="/images/sathimart_logo.png"
+                alt="Sathi Mart Logo"
+                className="h-12 w-auto"
+              />
+            </Link>
             <p className="text-sm">Your one-stop shop for everything amazing. Quality products, great service.</p>
           </div>
           <div>
@@ -53,12 +61,15 @@ const Footer = () => {
                 </a>
               ))}
             </div>
-            <p className="mt-4 text-sm">Email: <a href="mailto:support@yourstore.com" className="hover:text-white">support@yourstore.com</a></p>
+            <p className="mt-4 text-sm">Email: <a href="mailto:support@yourstore.com"
+              className="hover:text-white">support@yourstore.com</a></p>
           </div>
         </div>
         <div className="border-t border-gray-700 pt-8 text-center text-sm">
           <p>© {currentYear} My Awesome Department Store. All Rights Reserved.</p>
-          <p>Designed with <span className="text-red-500">♥</span> and Next.js</p>
+          {/* Ensure the following line's text makes sense or remove if not applicable */}
+          {/* Corrected line below */}
+          <p>Designed with <span className="text-red-500">{ '<3' }</span> and Next.js</p>
         </div>
       </div>
     </motion.footer>
@@ -66,3 +77,4 @@ const Footer = () => {
 };
 
 export default Footer;
+// ----- End of File: app/components/landing/Footer.jsx -----

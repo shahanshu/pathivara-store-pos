@@ -1,11 +1,12 @@
+// ----- File: app/components/landing/LandingPageClient.jsx -----
 // app/components/landing/LandingPageClient.jsx
 'use client';
-
 import Navbar from './Navbar';
 import HeroSection from './HeroSection';
-import FeaturesSection from './FeaturesSection';
-import TrendingProductsSection from './TrendingProductsSection'; // New
-import ShopByCategorySection from './ShopByCategorySection'; // New
+import ShopOurPicksSection from './ShopOurPicksSection';
+// import TrendingProductsSection from './TrendingProductsSection'; // Remove this
+import AboutUsSection from './AboutUsSection'; // Import the new section
+import ShopByCategorySection from './ShopByCategorySection';
 import CallToActionSection from './CallToActionSection';
 import Footer from './Footer';
 
@@ -15,13 +16,14 @@ export default function LandingPageClient() {
       <Navbar />
       <main>
         <HeroSection />
-        <FeaturesSection />
-        <TrendingProductsSection /> {/* Add new section */}
-        <ShopByCategorySection />   {/* Add new section */}
-        {/* You could add a Testimonials section here too */}
+        <ShopOurPicksSection />
+        {/* <TrendingProductsSection /> */} {/* Remove or comment out */}
+        <AboutUsSection /> {/* Add the new section here */}
+        <ShopByCategorySection />
         <CallToActionSection />
       </main>
       <Footer />
     </>
   );
 }
+// ----- End of File: app/components/landing/LandingPageClient.jsx -----

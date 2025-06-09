@@ -1,3 +1,4 @@
+// ----- File: app/components/landing/Navbar.jsx -----
 // app/components/landing/Navbar.jsx
 'use client';
 import Link from 'next/link';
@@ -37,8 +38,12 @@ const Navbar = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href="/" className="text-3xl font-bold text-primary hover:text-primary/80 transition-colors">
-            Store<span className="text-secondary">Logo</span>
+          <Link href="/" className="flex items-center">
+            <img
+              src="/images/sathimart_logo.png"
+              alt="Sathi Mart Logo"
+              className="h-10 w-auto" // Adjusted height, width will be auto
+            />
           </Link>
 
           {/* Desktop Menu */}
@@ -65,6 +70,7 @@ const Navbar = () => {
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="text-gray-700 hover:text-primary focus:outline-none p-2"
+              aria-label="Toggle menu"
             >
               {isOpen ? <FiX size={28} /> : <FiMenu size={28} />}
             </button>
@@ -108,3 +114,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+// ----- End of File: app/components/landing/Navbar.jsx -----
