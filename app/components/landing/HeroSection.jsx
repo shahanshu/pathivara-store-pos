@@ -32,7 +32,7 @@ const HeroSection = () => {
             transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
             className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-6 tracking-tight"
           >
-            Discover Your Next <span className="text-yellow-300">Favorite</span>
+            SathiMart <span className="text-yellow-300">Department</span>
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, x: 50 }}

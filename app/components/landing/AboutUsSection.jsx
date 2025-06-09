@@ -71,7 +71,7 @@ const AboutUsSection = () => {
             transition={{ duration: 0.7, delay:0.2, ease: "easeOut" }}
           >
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900 mb-6">
-              Welcome to <span className="text-primary">Sathi Mart</span>
+              About <span className="text-primary">Sathi Mart</span>
             </h2>
             <p className="text-lg text-gray-700 mb-6 leading-relaxed">
               At Sathi Mart, we are committed to providing our community with a wide selection of quality products at
