@@ -40,7 +40,7 @@ const HeroSection = () => {
             transition={{ duration: 0.7, delay: 0.4, ease: "easeOut" }}
             className="text-md sm:text-lg md:text-xl mb-10 font-light"
           >
-            Explore a curated collection of high-quality products, from the latest trends to timeless classics.
+            Explore a well defined collections of the Local as well as the initernationa household uetnsils & the finest products.
           </motion.p>
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
