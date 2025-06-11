@@ -3,12 +3,12 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
-import LoadingSpinner from '@/app/components/common/LoadingSpinner'; // Import the spinner
+import LoadingSpinner from '@/app/components/common/LoadingSpinner';
 
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
-  const [isLoadingList, setIsLoadingList] = useState(true); // For initial list loading
-  const [isDeleting, setIsDeleting] = useState(null); // productId of item being deleted, or null
+  const [isLoadingList, setIsLoadingList] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(null);
   const [error, setError] = useState("");
   const { user } = useAuth();
 
@@ -58,8 +58,7 @@ const AdminProductsPage = () => {
     if (!window.confirm(`Are you sure you want to delete product: "${productName}"? This action cannot be undone.`)) {
       return;
     }
-
-    setIsDeleting(productId); // Set loading state for this specific product
+    setIsDeleting(productId);
     setError(""); 
     try {
       const token = await user.getIdToken();
@@ -72,13 +71,12 @@ const AdminProductsPage = () => {
         throw new Error(data.message || 'Failed to delete product');
       }
       setProducts(prevProducts => prevProducts.filter(p => p._id !== productId));
-      // alert(data.message || 'Product deleted successfully.'); 
     } catch (err) {
       console.error(err);
       setError(err.message || 'An error occurred while deleting the product.');
-      alert(err.message || 'An error occurred while deleting the product.'); // Show error to user
+      alert(err.message || 'An error occurred while deleting the product.');
     } finally {
-      setIsDeleting(null); // Clear loading state for this product
+      setIsDeleting(null);
     }
   };
 
@@ -86,10 +84,11 @@ const AdminProductsPage = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Product Management</h1>
-        <Link href="/admin/products/new" legacyBehavior>
-          <a className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded">
-            Add New Product
-          </a>
+        <Link 
+          href="/admin/products/new" 
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Add New Product
         </Link>
       </div>
 
@@ -133,8 +132,11 @@ const AdminProductsPage = () => {
                     <p className="text-gray-900 whitespace-no-wrap">{product.currentStock}</p>
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm whitespace-nowrap">
-                    <Link href={`/admin/products/edit/${product._id}`} legacyBehavior>
-                      <a className={`text-indigo-600 hover:text-indigo-900 mr-3 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}>Edit</a>
+                    <Link 
+                      href={`/admin/products/edit/${product._id}`}
+                      className={`text-indigo-600 hover:text-indigo-900 mr-3 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
+                    >
+                      Edit
                     </Link>
                     <button
                       onClick={() => handleDeleteProduct(product._id, product.name)}

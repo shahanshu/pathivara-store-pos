@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+// import { useRouter, useParams } from 'next/navigation'; // useParams is used, useRouter is not.
+import { useParams } from 'next/navigation'; 
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
-import LoadingSpinner from '@/app/components/common/LoadingSpinner'; // Import spinner
+import LoadingSpinner from '@/app/components/common/LoadingSpinner';
 
 const EditProductPage = () => {
-  const router = useRouter();
+  // const router = useRouter(); // Not used
   const params = useParams();
   const { productId } = params;
   const { user } = useAuth();
@@ -20,14 +21,14 @@ const EditProductPage = () => {
   const [category, setCategory] = useState("");
   const [lowStockThreshold, setLowStockThreshold] = useState(10);
   
-  const [isLoadingData, setIsLoadingData] = useState(true); // For initial data fetch
-  const [isSubmitting, setIsSubmitting] = useState(false); // For form submission
+  const [isLoadingData, setIsLoadingData] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
 
   const fetchProductData = useCallback(async () => {
     if (!productId || !user) {
-        setIsLoadingData(false); // Ensure loading stops if prerequisites aren't met
+        setIsLoadingData(false);
         return;
     }
     setIsLoadingData(true);
@@ -71,13 +72,26 @@ const EditProductPage = () => {
     setError("");
     setSuccessMessage("");
 
-    // ... (your existing validation logic) ...
     if (!name || !price) {
       setError('Name and Price are required.');
       setIsSubmitting(false);
       return;
     }
-    // ... more validations
+     if (isNaN(parseFloat(price)) || parseFloat(price) <= 0) {
+      setError('Price must be a positive number.');
+      setIsSubmitting(false);
+      return;
+    }
+    if (isNaN(parseInt(currentStock)) || parseInt(currentStock) < 0) {
+      setError('Current stock must be a non-negative number.');
+      setIsSubmitting(false);
+      return;
+    }
+     if (isNaN(parseInt(lowStockThreshold)) || parseInt(lowStockThreshold) < 0) {
+      setError('Low stock threshold must be a non-negative number.');
+      setIsSubmitting(false);
+      return;
+    }
 
     const productDataToUpdate = {
       name, price: parseFloat(price), description,
@@ -100,11 +114,14 @@ const EditProductPage = () => {
         throw new Error(data.message || 'Failed to update product');
       }
       setSuccessMessage(data.message || 'Product updated successfully!');
-      if(data.product) { // Update form with potentially modified data from backend
+      if(data.product) {
         const product = data.product;
         setName(product.name);
         setPrice(product.price.toString());
-        // ... update other fields if backend might modify them during an update
+        setDescription(product.description || "");
+        setCurrentStock(product.currentStock || 0);
+        setCategory(product.category || "");
+        setLowStockThreshold(product.lowStockThreshold || 10);
       }
     } catch (err) {
       console.error(err);
@@ -116,7 +133,7 @@ const EditProductPage = () => {
 
   if (isLoadingData) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-theme(space.16)-theme(space.16))]"> {/* Adjust min-h if you have fixed header/sidebar */}
+      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-theme(space.16)-theme(space.16))]">
         <LoadingSpinner size="lg" />
         <p className="mt-4 text-gray-600">Loading product data...</p>
       </div>
@@ -127,8 +144,11 @@ const EditProductPage = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Edit Product</h1>
-        <Link href="/admin/products" legacyBehavior>
-          <a className="text-indigo-600 hover:text-indigo-800">← Back to Products</a>
+        <Link 
+          href="/admin/products" 
+          className="text-indigo-600 hover:text-indigo-800"
+        >
+          ← Back to Products
         </Link>
       </div>
 
@@ -138,7 +158,6 @@ const EditProductPage = () => {
       {!error && !productId && !isLoadingData && <p className="text-center text-red-500">Product ID is missing or product not found.</p>}
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-6">
-        {/* ... (all your input fields remain the same, including read-only barcode) ... */}
         <div>
           <label htmlFor="barcode-display" className="block text-sm font-medium text-gray-700">Barcode (Read-only)</label>
           <input type="text" id="barcode-display" value={barcode} readOnly className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 sm:text-sm"/>
@@ -147,7 +166,6 @@ const EditProductPage = () => {
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Product Name <span className="text-red-500">*</span></label>
           <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
         </div>
-        {/* ... other input fields ... */}
         <div>
           <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price <span className="text-red-500">*</span></label>
           <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} required step="0.01" min="0.01" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
