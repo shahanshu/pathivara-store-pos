@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { withAdminAuth } from '@/utils/apiAuth';
+import { syncProductToRTDB } from '@/lib/firebaseSync'; // Import the sync function
 
 export const GET = withAdminAuth(async function GET(request, { user }) {
   try {
@@ -14,6 +15,8 @@ export const GET = withAdminAuth(async function GET(request, { user }) {
 });
 
 export const POST = withAdminAuth(async function POST(request, { user }) {
+  let createdProductInMongo; // To hold the product created in MongoDB
+
   try {
     const { db } = await connectToDatabase();
     const productData = await request.json();
@@ -39,14 +42,29 @@ export const POST = withAdminAuth(async function POST(request, { user }) {
     };
 
     const result = await db.collection('products').insertOne(newProduct);
-    const createdProduct = await db.collection('products').findOne({ _id: result.insertedId });
+    // Fetch the complete product document from MongoDB as it now has _id and other defaults
+    createdProductInMongo = await db.collection('products').findOne({ _id: result.insertedId });
 
-    return NextResponse.json({ success: true, message: 'Product created successfully', product: createdProduct }, { status: 201 });
+    if (!createdProductInMongo) {
+      // This should ideally not happen if insertOne was successful
+      console.error("Failed to fetch created product from MongoDB immediately after insert.");
+      return NextResponse.json({ success: false, message: 'Failed to confirm product creation in MongoDB' }, { status: 500 });
+    }
+
+    // After successful MongoDB operation, sync to Firebase RTDB
+    // We pass createdProductInMongo because it contains all necessary fields including defaults
+    await syncProductToRTDB(createdProductInMongo); 
+
+    return NextResponse.json({ success: true, message: 'Product created and synced successfully', product: createdProductInMongo }, { status: 201 });
+
   } catch (error) {
     console.error("Failed to create product:", error);
-    if (error.code === 11000) {
+    // Note: If MongoDB operation succeeds but RTDB sync fails, the API might have already responded
+    // or will error out here. Consider more robust error handling/rollback for production.
+    // For now, if RTDB sync throws an unhandled error, this catch block will handle it.
+    if (error.code === 11000) { // MongoDB duplicate key error
       return NextResponse.json({ success: false, message: 'Duplicate key error. A product with similar unique fields might already exist.' }, { status: 409 });
     }
-    return NextResponse.json({ success: false, message: 'Failed to create product', error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Failed to create product or sync to RTDB', error: error.message }, { status: 500 });
   }
 });
