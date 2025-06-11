@@ -3,19 +3,21 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
+import LoadingSpinner from '@/app/components/common/LoadingSpinner'; // Import the spinner
 
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoadingList, setIsLoadingList] = useState(true); // For initial list loading
+  const [isDeleting, setIsDeleting] = useState(null); // productId of item being deleted, or null
   const [error, setError] = useState("");
   const { user } = useAuth();
 
   const fetchProducts = async () => {
       if (!user) {
-        setLoading(false);
+        setIsLoadingList(false);
         return;
       }
-      setLoading(true);
+      setIsLoadingList(true);
       setError("");
       try {
         const token = await user.getIdToken();
@@ -36,7 +38,7 @@ const AdminProductsPage = () => {
         console.error(err);
         setError(err.message);
       } finally {
-        setLoading(false);
+        setIsLoadingList(false);
       }
     };
 
@@ -44,7 +46,7 @@ const AdminProductsPage = () => {
     if (user) {
         fetchProducts();
     } else {
-        setLoading(false); 
+        setIsLoadingList(false); 
     }
   }, [user]);
 
@@ -57,7 +59,7 @@ const AdminProductsPage = () => {
       return;
     }
 
-    // Optionally set a specific loading state for deletion if needed
+    setIsDeleting(productId); // Set loading state for this specific product
     setError(""); 
     try {
       const token = await user.getIdToken();
@@ -69,16 +71,16 @@ const AdminProductsPage = () => {
       if (!response.ok || !data.success) {
         throw new Error(data.message || 'Failed to delete product');
       }
-      // Refresh product list after successful deletion
       setProducts(prevProducts => prevProducts.filter(p => p._id !== productId));
-      alert(data.message || 'Product deleted successfully.'); // Or use a more sophisticated notification
+      // alert(data.message || 'Product deleted successfully.'); 
     } catch (err) {
       console.error(err);
       setError(err.message || 'An error occurred while deleting the product.');
-      alert(err.message || 'An error occurred while deleting the product.');
+      alert(err.message || 'An error occurred while deleting the product.'); // Show error to user
+    } finally {
+      setIsDeleting(null); // Clear loading state for this product
     }
   };
-
 
   return (
     <div>
@@ -91,14 +93,19 @@ const AdminProductsPage = () => {
         </Link>
       </div>
 
-      {loading && <p className="text-gray-600">Loading products...</p>}
-      {error && <p className="text-red-500 bg-red-100 p-3 rounded">Error: {error}</p>}
+      {error && <p className="text-red-500 bg-red-100 p-3 rounded mb-4">Error: {error}</p>}
 
-      {!loading && !error && products.length === 0 && (
-        <p className="text-gray-600">No products found. Start by adding a new product.</p>
+      {isLoadingList && (
+        <div className="flex justify-center items-center py-10">
+          <LoadingSpinner size="lg" />
+        </div>
       )}
 
-      {!loading && !error && products.length > 0 && (
+      {!isLoadingList && !error && products.length === 0 && (
+        <p className="text-gray-600 text-center py-10">No products found. Start by adding a new product.</p>
+      )}
+
+      {!isLoadingList && !error && products.length > 0 && (
         <div className="bg-white shadow-md rounded-lg overflow-x-auto">
           <table className="min-w-full leading-normal">
             <thead>
@@ -127,13 +134,14 @@ const AdminProductsPage = () => {
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm whitespace-nowrap">
                     <Link href={`/admin/products/edit/${product._id}`} legacyBehavior>
-                      <a className="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
+                      <a className={`text-indigo-600 hover:text-indigo-900 mr-3 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}>Edit</a>
                     </Link>
                     <button
                       onClick={() => handleDeleteProduct(product._id, product.name)}
-                      className="text-red-600 hover:text-red-900"
+                      className={`text-red-600 hover:text-red-900 ${isDeleting === product._id ? 'opacity-50 pointer-events-none' : ''}`}
+                      disabled={isDeleting === product._id}
                     >
-                      Delete
+                      {isDeleting === product._id ? <LoadingSpinner size="sm" color="text-red-600"/> : 'Delete'}
                     </button>
                   </td>
                 </tr>
