@@ -1,24 +1,37 @@
-// app/admin/products/page.js
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
+  const { user } = useAuth();
 
   useEffect(() => {
     const fetchProducts = async () => {
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
-      setError('');
+      setError("");
       try {
-        const response = await fetch('/api/admin/products');
+        const token = await user.getIdToken();
+        const response = await fetch('/api/admin/products', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `Failed to fetch products: ${response.status}`);
         }
+        
         const data = await response.json();
         if (data.success) {
           setProducts(data.products);
@@ -33,8 +46,12 @@ const AdminProductsPage = () => {
       }
     };
 
-    fetchProducts();
-  }, []);
+    if (user) {
+        fetchProducts();
+    } else {
+        setLoading(false); 
+    }
+  }, [user]);
 
   return (
     <div>
@@ -59,21 +76,11 @@ const AdminProductsPage = () => {
           <table className="min-w-full leading-normal">
             <thead>
               <tr className="bg-gray-100">
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Barcode
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Price
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Stock
-                </th>
-                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  Actions
-                </th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Barcode</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Price</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Stock</th>
+                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -95,7 +102,6 @@ const AdminProductsPage = () => {
                     <Link href={`/admin/products/edit/${product._id}`} legacyBehavior>
                       <a className="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                     </Link>
-                    {/* Add Delete button later */}
                   </td>
                 </tr>
               ))}
@@ -106,4 +112,5 @@ const AdminProductsPage = () => {
     </div>
   );
 };
+
 export default AdminProductsPage;
