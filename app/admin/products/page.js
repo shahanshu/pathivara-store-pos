@@ -10,28 +10,22 @@ const AdminProductsPage = () => {
   const [error, setError] = useState("");
   const { user } = useAuth();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
+  const fetchProducts = async () => {
       if (!user) {
         setLoading(false);
         return;
       }
-      
       setLoading(true);
       setError("");
       try {
         const token = await user.getIdToken();
         const response = await fetch('/api/admin/products', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          },
+          headers: { 'Authorization': `Bearer ${token}` },
         });
-
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `Failed to fetch products: ${response.status}`);
         }
-        
         const data = await response.json();
         if (data.success) {
           setProducts(data.products);
@@ -46,12 +40,45 @@ const AdminProductsPage = () => {
       }
     };
 
+  useEffect(() => {
     if (user) {
         fetchProducts();
     } else {
         setLoading(false); 
     }
   }, [user]);
+
+  const handleDeleteProduct = async (productId, productName) => {
+    if (!user) {
+      setError("User not authenticated.");
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to delete product: "${productName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    // Optionally set a specific loading state for deletion if needed
+    setError(""); 
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch(`/api/admin/products/${productId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || 'Failed to delete product');
+      }
+      // Refresh product list after successful deletion
+      setProducts(prevProducts => prevProducts.filter(p => p._id !== productId));
+      alert(data.message || 'Product deleted successfully.'); // Or use a more sophisticated notification
+    } catch (err) {
+      console.error(err);
+      setError(err.message || 'An error occurred while deleting the product.');
+      alert(err.message || 'An error occurred while deleting the product.');
+    }
+  };
+
 
   return (
     <div>
@@ -98,10 +125,16 @@ const AdminProductsPage = () => {
                   <td className="px-5 py-4 border-b border-gray-200 text-sm">
                     <p className="text-gray-900 whitespace-no-wrap">{product.currentStock}</p>
                   </td>
-                  <td className="px-5 py-4 border-b border-gray-200 text-sm">
+                  <td className="px-5 py-4 border-b border-gray-200 text-sm whitespace-nowrap">
                     <Link href={`/admin/products/edit/${product._id}`} legacyBehavior>
                       <a className="text-indigo-600 hover:text-indigo-900 mr-3">Edit</a>
                     </Link>
+                    <button
+                      onClick={() => handleDeleteProduct(product._id, product.name)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}
