@@ -1,6 +1,5 @@
 'use client';
-
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
@@ -12,43 +11,45 @@ const AdminProductsPage = () => {
   const [error, setError] = useState("");
   const { user } = useAuth();
 
-  const fetchProducts = async () => {
-      if (!user) {
-        setIsLoadingList(false);
-        return;
+  const fetchProducts = useCallback(async () => {
+    if (!user) {
+      setIsLoadingList(false);
+      setError("User not authenticated. Please login."); // Set error
+      return;
+    }
+    setIsLoadingList(true);
+    setError("");
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('/api/admin/products', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || `Failed to fetch products: ${response.status}`);
       }
-      setIsLoadingList(true);
-      setError("");
-      try {
-        const token = await user.getIdToken();
-        const response = await fetch('/api/admin/products', {
-          headers: { 'Authorization': `Bearer ${token}` },
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `Failed to fetch products: ${response.status}`);
-        }
-        const data = await response.json();
-        if (data.success) {
-          setProducts(data.products);
-        } else {
-          throw new Error(data.message || 'Failed to fetch products');
-        }
-      } catch (err) {
-        console.error(err);
-        setError(err.message);
-      } finally {
-        setIsLoadingList(false);
+      const data = await response.json();
+      if (data.success) {
+        setProducts(data.products);
+      } else {
+        throw new Error(data.message || 'Failed to fetch products');
       }
-    };
+    } catch (err) {
+      console.error(err);
+      setError(err.message);
+    } finally {
+      setIsLoadingList(false);
+    }
+  }, [user]); // user is a dependency for fetchProducts
 
   useEffect(() => {
     if (user) {
-        fetchProducts();
+      fetchProducts();
     } else {
-        setIsLoadingList(false); 
+      setIsLoadingList(false); // Stop loading if no user
+      setError("User not authenticated. Please login."); // Also set error
     }
-  }, [user]);
+  }, [user, fetchProducts]); // fetchProducts is now a dependency
 
   const handleDeleteProduct = async (productId, productName) => {
     if (!user) {
@@ -59,7 +60,7 @@ const AdminProductsPage = () => {
       return;
     }
     setIsDeleting(productId);
-    setError(""); 
+    setError("");
     try {
       const token = await user.getIdToken();
       const response = await fetch(`/api/admin/products/${productId}`, {
@@ -84,8 +85,8 @@ const AdminProductsPage = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Product Management</h1>
-        <Link 
-          href="/admin/products/new" 
+        <Link
+          href="/admin/products/new"
           className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
         >
           Add New Product
@@ -132,7 +133,7 @@ const AdminProductsPage = () => {
                     <p className="text-gray-900 whitespace-no-wrap">{product.currentStock}</p>
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm whitespace-nowrap">
-                    <Link 
+                    <Link
                       href={`/admin/products/edit/${product._id}`}
                       className={`text-indigo-600 hover:text-indigo-900 mr-3 ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
                     >
@@ -140,7 +141,7 @@ const AdminProductsPage = () => {
                     </Link>
                     <button
                       onClick={() => handleDeleteProduct(product._id, product.name)}
-                      className={`text-red-600 hover:text-red-900 ${isDeleting === product._id ? 'opacity-50 pointer-events-none' : ''}`}
+                      className={`text-red-600 hover:text-red-900 ${isDeleting === product._id ? 'opacity-50 pointer-events-none' : ""}`}
                       disabled={isDeleting === product._id}
                     >
                       {isDeleting === product._id ? <LoadingSpinner size="sm" color="text-red-600"/> : 'Delete'}

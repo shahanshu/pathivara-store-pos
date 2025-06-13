@@ -1,10 +1,10 @@
+// File: app/admin/import-ledger/page.js
 'use client';
-
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
-import { FiPlusCircle, FiEye, FiEdit, FiTrash2 } from 'react-icons/fi';
+import { FiPlusCircle, FiEye, FiEdit, FiTrash2, FiArchive } from 'react-icons/fi'; 
 
 const AdminImportLedgerPage = () => {
   const [entries, setEntries] = useState([]);
@@ -40,11 +40,11 @@ const AdminImportLedgerPage = () => {
     };
 
     if (user) {
-        fetchEntries();
+      fetchEntries();
     } else {
-        setIsLoading(false); 
+      setIsLoading(false); // If no user, stop loading, error set in fetchEntries
     }
-  }, [user]); 
+  }, [user]);
 
   if (isLoading) {
     return (
@@ -57,13 +57,12 @@ const AdminImportLedgerPage = () => {
 
   if (!user && !isLoading) {
     return (
-        <div className="text-center py-10">
-            <p className="text-red-500 bg-red-100 p-3 rounded mb-4">Error: User not authenticated. Please login.</p>
-            <Link href="/login" className="text-indigo-600 hover:text-indigo-800">Go to Login</Link>
-        </div>
+      <div className="text-center py-10">
+        <p className="text-red-500 bg-red-100 p-3 rounded mb-4">Error: User not authenticated. Please login.</p>
+        <Link href="/login" className="text-indigo-600 hover:text-indigo-800">Go to Login</Link>
+      </div>
     );
   }
-
 
   return (
     <div>
@@ -81,9 +80,9 @@ const AdminImportLedgerPage = () => {
 
       {!error && entries.length === 0 && !isLoading && (
         <div className="text-center py-10 bg-white shadow-md rounded-lg">
-            <FiArchive className="mx-auto text-6xl text-gray-400 mb-4" />
-            <p className="text-gray-600 text-xl">No import ledger entries found.</p>
-            <p className="text-gray-500 mt-2">Start by recording a new import using the button above.</p>
+          <FiArchive className="mx-auto text-6xl text-gray-400 mb-4" />
+          <p className="text-gray-600 text-xl">No import ledger entries found.</p>
+          <p className="text-gray-500 mt-2">Start by recording a new import using the button above.</p>
         </div>
       )}
 
@@ -108,7 +107,7 @@ const AdminImportLedgerPage = () => {
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm">
                     <Link href={`/admin/importers/edit/${entry.importerInfo?._id}`} className="text-indigo-600 hover:underline" title={`View/Edit Importer: ${entry.importerInfo?.name}`}>
-                        {entry.importerInfo?.name || 'N/A'}
+                      {entry.importerInfo?.name || 'N/A'}
                     </Link>
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm">
@@ -121,29 +120,29 @@ const AdminImportLedgerPage = () => {
                     ${entry.grandTotalCost ? entry.grandTotalCost.toFixed(2) : '0.00'}
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm text-center whitespace-nowrap">
-                    <Link 
-                        href={`/admin/import-ledger/${entry._id}`} 
-                        className="text-indigo-600 hover:text-indigo-800 p-1 rounded-full hover:bg-indigo-100 transition-colors duration-150 inline-block" // Added inline-block
-                        title="View Details"
+                    <Link
+                      href={`/admin/import-ledger/${entry._id}`}
+                      className="text-indigo-600 hover:text-indigo-800 p-1 rounded-full hover:bg-indigo-100 transition-colors duration-150 inline-block" // Added inline-block
+                      title="View Details"
                     >
-                        <FiEye size={18} />
+                      <FiEye size={18} />
                     </Link>
                     {/* Placeholder for future Edit/Delete actions */}
-                    {/* 
-                    <button 
-                        className="text-yellow-500 hover:text-yellow-700 ml-3 p-1 rounded-full hover:bg-yellow-100 transition-colors duration-150 inline-block disabled:opacity-50 disabled:cursor-not-allowed" 
-                        title="Edit Import (Coming Soon)" 
-                        disabled
+                    {/*
+                    <button
+                      className="text-yellow-500 hover:text-yellow-700 ml-3 p-1 rounded-full hover:bg-yellow-100 transition-colors duration-150 inline-block disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Edit Import (Coming Soon)"
+                      disabled
                     >
-                        <FiEdit size={18} />
+                      <FiEdit size={18} />
                     </button>
-                    <button 
-                        className="text-red-500 hover:text-red-700 ml-3 p-1 rounded-full hover:bg-red-100 transition-colors duration-150 inline-block disabled:opacity-50 disabled:cursor-not-allowed" 
-                        title="Delete Import (Coming Soon)" 
-                        disabled
+                    <button
+                      className="text-red-500 hover:text-red-700 ml-3 p-1 rounded-full hover:bg-red-100 transition-colors duration-150 inline-block disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Delete Import (Coming Soon)"
+                      disabled
                     >
-                        <FiTrash2 size={18} />
-                    </button> 
+                      <FiTrash2 size={18} />
+                    </button>
                     */}
                   </td>
                 </tr>

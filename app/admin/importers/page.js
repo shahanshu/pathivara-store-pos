@@ -1,7 +1,7 @@
 // File: app/admin/importers/page.js
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
@@ -12,19 +12,18 @@ const AdminImportersPage = () => {
   const [isLoadingList, setIsLoadingList] = useState(true);
   const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(null); // To track which importer is being deleted
-  const [actionMessage, setActionMessage] = useState({ type: '', text: '' }); // For success/error messages
-
+  const [actionMessage, setActionMessage] = useState({ type: "", text: '' }); // For success/error messages
   const { user } = useAuth();
 
-  const fetchImporters = async () => {
+  const fetchImporters = useCallback(async () => {
     if (!user) {
       setIsLoadingList(false);
-      setError("User not authenticated.");
+      setError("User not authenticated."); // Set error, loading already false
       return;
     }
     setIsLoadingList(true);
     setError("");
-    setActionMessage({ type: '', text: '' }); // Clear previous messages
+    setActionMessage({ type: "", text: '' }); // Clear previous messages
     try {
       const token = await user.getIdToken();
       const response = await fetch('/api/admin/importers', {
@@ -41,16 +40,16 @@ const AdminImportersPage = () => {
     } finally {
       setIsLoadingList(false);
     }
-  };
+  }, [user]); // user is a dependency for fetchImporters
 
   useEffect(() => {
     if (user) { // Fetch importers only if user is available
-        fetchImporters();
+      fetchImporters();
     } else {
-        setIsLoadingList(false); // If no user, stop loading
-        setError("User not authenticated. Please login.");
+      setIsLoadingList(false); // If no user, stop loading
+      setError("User not authenticated. Please login.");
     }
-  }, [user]); // Rerun when user object changes
+  }, [user, fetchImporters]); // Rerun when user object changes or fetchImporters identity changes
 
   const handleDeleteImporter = async (importerId, importerName) => {
     if (!user) {
@@ -62,7 +61,7 @@ const AdminImportersPage = () => {
     }
     setIsDeleting(importerId);
     setError("");
-    setActionMessage({ type: '', text: '' });
+    setActionMessage({ type: "", text: '' });
     try {
       const token = await user.getIdToken();
       const response = await fetch(`/api/admin/importers/${importerId}`, {
@@ -81,7 +80,7 @@ const AdminImportersPage = () => {
       setActionMessage({ type: 'error', text: `Error deleting importer: ${err.message}` }); // Specific action error
     } finally {
       setIsDeleting(null);
-      setTimeout(() => setActionMessage({ type: '', text: '' }), 5000); // Clear message after 5s
+      setTimeout(() => setActionMessage({ type: "", text: '' }), 5000); // Clear message after 5s
     }
   };
 
@@ -138,14 +137,14 @@ const AdminImportersPage = () => {
                   <td className="px-5 py-4 border-b border-gray-200 text-sm whitespace-nowrap">
                     <Link
                       href={`/admin/importers/edit/${importer._id}`}
-                      className={`text-indigo-600 hover:text-indigo-900 mr-3 ${isDeleting === importer._id ? 'opacity-50 pointer-events-none' : ''}`}
+                      className={`text-indigo-600 hover:text-indigo-900 mr-3 ${isDeleting === importer._id ? 'opacity-50 pointer-events-none' : ""}`}
                       title="Edit Importer"
                     >
                       <FiEdit size={18} />
                     </Link>
                     <button
                       onClick={() => handleDeleteImporter(importer._id, importer.name)}
-                      className={`text-red-600 hover:text-red-900 ${isDeleting === importer._id ? 'opacity-50 pointer-events-none' : ''}`}
+                      className={`text-red-600 hover:text-red-900 ${isDeleting === importer._id ? 'opacity-50 pointer-events-none' : ""}`}
                       disabled={isDeleting === importer._id}
                       title="Delete Importer"
                     >
