@@ -5,14 +5,16 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
-import { FiEdit, FiTrash2, FiPlusCircle } from 'react-icons/fi'; // Example icons
+import { FiEdit, FiTrash2, FiPlusCircle } from 'react-icons/fi';
 
 const AdminImportersPage = () => {
   const [importers, setImporters] = useState([]);
   const [isLoadingList, setIsLoadingList] = useState(true);
-  const [error, setError] = useState('');
-  const { user } = useAuth();
+  const [error, setError] = useState("");
   const [isDeleting, setIsDeleting] = useState(null); // To track which importer is being deleted
+  const [actionMessage, setActionMessage] = useState({ type: '', text: '' }); // For success/error messages
+
+  const { user } = useAuth();
 
   const fetchImporters = async () => {
     if (!user) {
@@ -21,7 +23,8 @@ const AdminImportersPage = () => {
       return;
     }
     setIsLoadingList(true);
-    setError('');
+    setError("");
+    setActionMessage({ type: '', text: '' }); // Clear previous messages
     try {
       const token = await user.getIdToken();
       const response = await fetch('/api/admin/importers', {
@@ -41,8 +44,13 @@ const AdminImportersPage = () => {
   };
 
   useEffect(() => {
-    fetchImporters();
-  }, [user]);
+    if (user) { // Fetch importers only if user is available
+        fetchImporters();
+    } else {
+        setIsLoadingList(false); // If no user, stop loading
+        setError("User not authenticated. Please login.");
+    }
+  }, [user]); // Rerun when user object changes
 
   const handleDeleteImporter = async (importerId, importerName) => {
     if (!user) {
@@ -52,9 +60,9 @@ const AdminImportersPage = () => {
     if (!window.confirm(`Are you sure you want to delete importer: "${importerName}"? This action cannot be undone.`)) {
       return;
     }
-
     setIsDeleting(importerId);
-    setError('');
+    setError("");
+    setActionMessage({ type: '', text: '' });
     try {
       const token = await user.getIdToken();
       const response = await fetch(`/api/admin/importers/${importerId}`, {
@@ -65,15 +73,15 @@ const AdminImportersPage = () => {
       if (!response.ok || !data.success) {
         throw new Error(data.message || 'Failed to delete importer');
       }
-      // Refresh the list
       setImporters(prevImporters => prevImporters.filter(imp => imp._id !== importerId));
-      alert(`Importer "${importerName}" deleted successfully.`);
+      setActionMessage({ type: 'success', text: `Importer "${importerName}" deleted successfully.` });
     } catch (err) {
       console.error(err);
-      setError(err.message);
-      alert(`Error deleting importer: ${err.message}`);
+      setError(err.message); // Set general error for the page
+      setActionMessage({ type: 'error', text: `Error deleting importer: ${err.message}` }); // Specific action error
     } finally {
       setIsDeleting(null);
+      setTimeout(() => setActionMessage({ type: '', text: '' }), 5000); // Clear message after 5s
     }
   };
 
@@ -90,6 +98,11 @@ const AdminImportersPage = () => {
       </div>
 
       {error && <p className="text-red-500 bg-red-100 p-3 rounded mb-4">Error: {error}</p>}
+      {actionMessage.text && (
+        <p className={`p-3 rounded mb-4 ${actionMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+          {actionMessage.text}
+        </p>
+      )}
 
       {isLoadingList ? (
         <div className="flex justify-center items-center py-10">
@@ -97,7 +110,7 @@ const AdminImportersPage = () => {
         </div>
       ) : !error && importers.length === 0 ? (
         <p className="text-gray-600 text-center py-10">No importers found. Start by adding a new one.</p>
-      ) : (
+      ) : importers.length > 0 ? ( // Only render table if importers exist and no critical error preventing list display
         <div className="bg-white shadow-md rounded-lg overflow-x-auto">
           <table className="min-w-full leading-normal">
             <thead>
@@ -144,7 +157,7 @@ const AdminImportersPage = () => {
             </tbody>
           </table>
         </div>
-      )}
+      ) : null} {/* If error and no importers, the error message above handles it */}
     </div>
   );
 };

@@ -5,34 +5,41 @@ import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation'; // useRouter might be useful for redirecting after certain errors
 
 const EditImporterPage = () => {
   const params = useParams();
-  const { importerId } = params;
-  const router = useRouter();
+  const { importerId } = params; // Corrected: importerId from params
+  const router = useRouter(); // Keep for potential redirects
 
-  const [name, setName] = useState('');
-  const [panNumber, setPanNumber] = useState('');
-  const [contactInfo, setContactInfo] = useState('');
-  
+  const [name, setName] = useState("");
+  const [panNumber, setPanNumber] = useState("");
+  const [contactInfo, setContactInfo] = useState("");
+
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
   const { user } = useAuth();
 
   const fetchImporterData = useCallback(async () => {
-    if (!importerId || !user) {
+    if (!importerId) {
+        setError("Importer ID is missing from URL.");
+        setIsLoadingData(false);
+        return;
+    }
+    if (!user) {
+      // setError("User not authenticated. Please login."); // This case should ideally be handled by AdminLayout
       setIsLoadingData(false);
-      setError(!importerId ? "Importer ID missing." : "User not authenticated.");
       return;
     }
+
     setIsLoadingData(true);
-    setError('');
+    setError("");
+    setSuccessMessage("");
     try {
       const token = await user.getIdToken();
-      const response = await fetch(`/api/admin/importers/${importerId}`, {
+      const response = await fetch(`/api/admin/importers/${importerId}`, { // Corrected: importerId
         headers: { 'Authorization': `Bearer ${token}` },
       });
       const data = await response.json();
@@ -40,16 +47,20 @@ const EditImporterPage = () => {
         throw new Error(data.message || 'Failed to fetch importer data');
       }
       const importer = data.importer;
-      setName(importer.name);
-      setPanNumber(importer.panNumber);
-      setContactInfo(importer.contactInfo || '');
+      if (importer) {
+        setName(importer.name);
+        setPanNumber(importer.panNumber);
+        setContactInfo(importer.contactInfo || "");
+      } else {
+        throw new Error('Importer data not found in response.');
+      }
     } catch (err) {
       console.error(err);
       setError(err.message);
     } finally {
       setIsLoadingData(false);
     }
-  }, [importerId, user]);
+  }, [importerId, user]); // Corrected: importerId
 
   useEffect(() => {
     fetchImporterData();
@@ -61,18 +72,18 @@ const EditImporterPage = () => {
       setError('User not authenticated. Please login again.');
       return;
     }
-     if (!name.trim() || !panNumber.trim()) {
+    if (!name.trim() || !panNumber.trim()) {
       setError('Importer Name and PAN Number are required.');
       return;
     }
 
     setIsSubmitting(true);
-    setError('');
-    setSuccessMessage('');
+    setError("");
+    setSuccessMessage("");
 
     try {
       const token = await user.getIdToken();
-      const response = await fetch(`/api/admin/importers/${importerId}`, {
+      const response = await fetch(`/api/admin/importers/${importerId}`, { // Corrected: importerId
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -80,21 +91,18 @@ const EditImporterPage = () => {
         },
         body: JSON.stringify({ name, panNumber, contactInfo }),
       });
-
       const data = await response.json();
-
       if (!response.ok || !data.success) {
         throw new Error(data.message || `Failed to update importer: ${response.status}`);
       }
-
       setSuccessMessage(`Importer "${data.importer.name}" updated successfully!`);
-      // Optionally, re-fetch or update state from response
-      setName(data.importer.name);
-      setPanNumber(data.importer.panNumber);
-      setContactInfo(data.importer.contactInfo || '');
-      
-      setTimeout(() => setSuccessMessage(''), 3000); // Clear success message after 3s
-
+      // Optionally, re-update state from response if backend modifies data (e.g., timestamps)
+      if (data.importer) {
+          setName(data.importer.name);
+          setPanNumber(data.importer.panNumber);
+          setContactInfo(data.importer.contactInfo || "");
+      }
+      setTimeout(() => setSuccessMessage(""), 3000); // Clear success message after 3s
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -105,24 +113,25 @@ const EditImporterPage = () => {
 
   if (isLoadingData) {
     return (
-      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-theme(space.16)-theme(space.16))]">
+      <div className="flex flex-col justify-center items-center min-h-[calc(100vh-theme(space.16)-theme(space.16))]"> {/* Adjust height based on your layout */}
         <LoadingSpinner size="lg" />
         <p className="mt-4 text-gray-600">Loading importer data...</p>
       </div>
     );
   }
-  
-  if (error && !name) { // If there's an error and no data was loaded for the form
+
+  // If there was an error and critical data (like name) isn't loaded, show error message.
+  // This helps if importerId is invalid or user doesn't have access (though API should handle 404/403).
+  if (error && !name) {
     return (
       <div className="text-center p-8">
-         <p className="mb-4 text-red-600 bg-red-100 p-3 rounded-md">{error}</p>
-         <Link href="/admin/importers" className="text-indigo-600 hover:text-indigo-800">
+        <p className="mb-4 text-red-500 bg-red-100 p-3 rounded-md">{error}</p>
+        <Link href="/admin/importers" className="text-indigo-600 hover:text-indigo-800">
           ← Back to Importers
         </Link>
       </div>
     );
   }
-
 
   return (
     <div>
@@ -133,7 +142,8 @@ const EditImporterPage = () => {
         </Link>
       </div>
 
-      {error && <p className="mb-4 text-red-600 bg-red-100 p-3 rounded-md">{error}</p>}
+      {/* General error for the form if name is loaded but some other error occurred during submit */}
+      {error && name && <p className="mb-4 text-red-600 bg-red-100 p-3 rounded-md">{error}</p>}
       {successMessage && <p className="mb-4 text-green-600 bg-green-100 p-3 rounded-md">{successMessage}</p>}
 
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-6">
@@ -182,7 +192,7 @@ const EditImporterPage = () => {
         <div>
           <button
             type="submit"
-            disabled={isSubmitting || isLoadingData}
+            disabled={isSubmitting || isLoadingData} // Prevent submission if initial data is still loading
             className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
