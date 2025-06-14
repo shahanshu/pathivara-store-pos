@@ -3,13 +3,15 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
-import { rtdb } from '@/lib/firebase';
-import { ref, get } from 'firebase/database';
+import { rtdb, ref } from '@/lib/firebase'; // Get rtdb instance and ref creator
+import { get } from 'firebase/database';   // Import get directly for RTDB
 import BarcodeScanner from '@/app/components/cashier/BarcodeScanner';
 import ProductDisplay from '@/app/components/cashier/ProductDisplay';
 import CartDisplay from '@/app/components/cashier/CartDisplay';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
 import { FiXCircle, FiCheckCircle, FiShoppingCart, FiDollarSign, FiTrash2, FiPlusSquare, FiMinusSquare, FiAlertTriangle, FiPrinter } from 'react-icons/fi';
+import RecentTransactions from '@/app/components/cashier/RecentTransactions';
+import ReturnEditModal from '@/app/components/cashier/ReturnEditModal';
 
 const formatCurrency = (amount) => {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
@@ -23,20 +25,53 @@ export default function CashierPage() {
   const [productError, setProductError] = useState('');
   const [cart, setCart] = useState([]);
   const [manualQuantity, setManualQuantity] = useState(1);
+  
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [checkoutSuccess, setCheckoutSuccess] = useState(null);
   const [checkoutError, setCheckoutError] = useState('');
+
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [isLoadingRecentTx, setIsLoadingRecentTx] = useState(false);
+  const [selectedTxForEdit, setSelectedTxForEdit] = useState(null);
 
   const barcodeInputRef = useRef(null);
 
   useEffect(() => {
     barcodeInputRef.current?.focus();
   }, []);
-
+  
   useEffect(() => {
     setCheckoutError('');
     setCheckoutSuccess(null);
   }, [cart, scannedProduct]);
+
+  const fetchRecentTransactions = useCallback(async () => {
+    if (!user) return;
+    setIsLoadingRecentTx(true);
+    setCheckoutError(''); // Clear general errors when fetching recent transactions
+    try {
+      const token = await user.getIdToken();
+      const response = await fetch('/api/cashier/recent-transactions', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const data = await response.json();
+      if (data.success) {
+        setRecentTransactions(data.transactions);
+      } else {
+        console.error("Failed to fetch recent transactions:", data.message);
+        setCheckoutError(`Error loading recent sales: ${data.message || 'Unknown error'}`);
+      }
+    } catch (error) {
+      console.error("Error fetching recent transactions:", error);
+      setCheckoutError(`Error loading recent sales: ${error.message || 'Network error'}`);
+    } finally {
+      setIsLoadingRecentTx(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchRecentTransactions();
+  }, [fetchRecentTransactions, checkoutSuccess]); // Refetch when user changes or after a successful checkout
 
   const handleBarcodeSubmit = async (submittedBarcode) => {
     if (!submittedBarcode.trim()) {
@@ -45,22 +80,23 @@ export default function CashierPage() {
     }
     setIsLoadingProduct(true);
     setProductError('');
-    setCheckoutError('');
+    setCheckoutError(''); 
     setCheckoutSuccess(null);
     setScannedProduct(null);
 
     try {
-      const productRef = ref(rtdb, `productsInfo/${submittedBarcode.trim()}`);
-      const snapshot = await get(productRef);
+      const productRefPath = `productsInfo/${submittedBarcode.trim()}`;
+      const productDatabaseRef = ref(rtdb, productRefPath); // Use ref from @/lib/firebase
+      const snapshot = await get(productDatabaseRef); // Use get from firebase/database
 
       if (snapshot.exists()) {
         const productData = snapshot.val();
         if (productData.currentStock > 0) {
           setScannedProduct({ barcode: submittedBarcode.trim(), ...productData });
           addItemToCart({ barcode: submittedBarcode.trim(), ...productData }, manualQuantity);
-          setBarcode('');
-          setManualQuantity(1);
-          barcodeInputRef.current?.focus();
+          setBarcode(''); 
+          setManualQuantity(1); 
+          barcodeInputRef.current?.focus(); 
         } else {
           setProductError(`Product "${productData.name}" is out of stock.`);
           setScannedProduct({ barcode: submittedBarcode.trim(), ...productData, isOutOfStock: true });
@@ -88,7 +124,7 @@ export default function CashierPage() {
         return;
     }
     
-    setProductError('');
+    setProductError(''); 
 
     setCart(prevCart => {
       const existingItemIndex = prevCart.findIndex(item => item.barcode === productToAdd.barcode);
@@ -97,7 +133,7 @@ export default function CashierPage() {
 
       if (currentCartQuantity + qtyToAdd > stockInRtdb) {
           setProductError(`Not enough stock for "${productToAdd.name}". Available: ${stockInRtdb - currentCartQuantity}.`);
-          return prevCart;
+          return prevCart; 
       }
 
       if (existingItemIndex !== -1) {
@@ -114,10 +150,10 @@ export default function CashierPage() {
           {
             barcode: productToAdd.barcode,
             name: productToAdd.name,
-            priceAtSale: productToAdd.price,
+            priceAtSale: productToAdd.price, 
             quantityInCart: qtyToAdd,
             itemTotal: qtyToAdd * productToAdd.price,
-            stockAvailableRTDB: productToAdd.currentStock
+            stockAvailableRTDB: productToAdd.currentStock 
           },
         ];
       }
@@ -130,18 +166,19 @@ export default function CashierPage() {
         if (itemIndex === -1) return prevCart;
 
         const itemToUpdate = prevCart[itemIndex];
-        const stockInRtdb = itemToUpdate.stockAvailableRTDB;
+        const stockInRtdb = itemToUpdate.stockAvailableRTDB; 
 
-        if (newQuantity < 0) newQuantity = 0;
+        if (newQuantity < 0) newQuantity = 0; 
 
         if (newQuantity > stockInRtdb) {
             setProductError(`Not enough stock for "${itemToUpdate.name}". Max available: ${stockInRtdb}.`);
-            return prevCart;
+            // Optionally cap at max available: newQuantity = stockInRtdb;
+            return prevCart; 
         }
         
         setProductError('');
 
-        if (newQuantity === 0) {
+        if (newQuantity === 0) { 
             return prevCart.filter(item => item.barcode !== barcode);
         }
 
@@ -191,16 +228,16 @@ export default function CashierPage() {
       if (!response.ok || !data.success) {
         throw new Error(data.message || 'Checkout failed. Please try again.');
       }
-
-      setCheckoutSuccess(data.transaction);
-      setCart([]);
+      
+      setCheckoutSuccess(data.transaction); 
+      setCart([]); 
       setScannedProduct(null);
       setProductError('');
       
       setTimeout(() => {
-        setCheckoutSuccess(null);
+        // No need to clear checkoutSuccess here, handleNewSale will do it
         barcodeInputRef.current?.focus();
-      }, 5000);
+      }, 100); 
 
     } catch (error) {
       console.error("Checkout Error:", error);
@@ -220,9 +257,24 @@ export default function CashierPage() {
     setBarcode('');
     setManualQuantity(1);
     barcodeInputRef.current?.focus();
-  }
+  };
 
-  if (!user && !isLoadingProduct) {
+  const handleSelectTransactionForEdit = (transaction) => {
+    setSelectedTxForEdit(transaction);
+  };
+
+  const handleCloseEditModal = () => {
+    setSelectedTxForEdit(null);
+    fetchRecentTransactions(); 
+  };
+  
+  const handleTransactionModified = () => {
+    fetchRecentTransactions(); 
+    setSelectedTxForEdit(null); 
+    // You might want to show a global success message here if the modal doesn't handle it
+  };
+
+  if (!user && !isLoadingProduct && !isLoadingRecentTx) { 
     return (
         <div className="flex flex-col justify-center items-center min-h-screen">
             <LoadingSpinner size="lg" message="Authenticating cashier..." />
@@ -243,12 +295,6 @@ export default function CashierPage() {
                 className="mt-6 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg shadow"
             >
                 Start New Sale
-            </button>
-            <button 
-                onClick={() => alert('Print receipt functionality to be implemented.')}
-                className="mt-6 ml-4 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-lg shadow flex items-center justify-center mx-auto sm:mx-0 sm:inline-flex"
-            >
-                <FiPrinter className="mr-2"/> Print Receipt
             </button>
         </div>
       ) : (
@@ -278,7 +324,6 @@ export default function CashierPage() {
              <ProductDisplay product={scannedProduct} onAddToCart={() => {}} isCashierView={true} />
           )}
         </div>
-
         <div className="lg:col-span-3">
           <CartDisplay 
             cart={cart} 
@@ -286,7 +331,7 @@ export default function CashierPage() {
             onUpdateQuantity={updateCartItemQuantity}
             formatCurrency={formatCurrency} 
           />
-          {checkoutError && (
+          {checkoutError && ( // Display general checkout/API errors here
             <div className="mt-4 p-3 bg-red-100 text-red-700 rounded shadow-sm flex items-center text-sm">
               <FiAlertTriangle className="mr-2 h-5 w-5 flex-shrink-0"/> {checkoutError}
             </div>
@@ -309,6 +354,26 @@ export default function CashierPage() {
           )}
         </div>
       </div>
+      )} 
+
+      {!checkoutSuccess && ( 
+        <div className="mt-8">
+          <RecentTransactions 
+            transactions={recentTransactions} 
+            onSelectTransactionForEdit={handleSelectTransactionForEdit}
+            isLoading={isLoadingRecentTx}
+          />
+        </div>
+      )}
+
+      {selectedTxForEdit && (
+        <ReturnEditModal 
+            transaction={selectedTxForEdit}
+            isOpen={!!selectedTxForEdit}
+            onClose={handleCloseEditModal}
+            onTransactionModified={handleTransactionModified} 
+            user={user} 
+        />
       )}
     </div>
   );
