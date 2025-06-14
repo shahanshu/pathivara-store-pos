@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { withAdminAuth } from '@/utils/apiAuth'; // Using withAdminAuth, implies admin can also checkout
+import { withAuth } from '@/utils/withAuth'; // Changed from withAdminAuth to withAuth
 import { updateProductInRTDB, addRecentCashierTransaction } from '@/lib/firebaseSync';
 
 // Helper function to generate a unique transaction ID
@@ -18,8 +18,8 @@ function generateTransactionId() {
   return `SALE-${yyyy}${mm}${dd}-${hh}${min}${ss}-${randomSuffix}`;
 }
 
-export const POST = withAdminAuth(async function checkout(request, { user }) {
-  // user object comes from withAdminAuth (decoded Firebase token)
+export const POST = withAuth(async function checkout(request, { user }) {
+  // user object comes from withAuth (decoded Firebase token)
   const cashierId = user.uid;
 
   try {
@@ -104,7 +104,6 @@ export const POST = withAdminAuth(async function checkout(request, { user }) {
 
     const saleResult = await salesTransactionCollection.insertOne(newSale);
     const createdSale = await salesTransactionCollection.findOne({_id: saleResult.insertedId});
-
 
     // --- Step 3: Sync updated stock to Firebase RTDB ---
     // And add to recent cashier transactions
