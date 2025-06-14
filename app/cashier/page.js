@@ -1,4 +1,3 @@
-// app/cashier/page.js
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -317,7 +316,7 @@ export default function CashierPage() {
           )}
           {scannedProduct && !productError && !scannedProduct.isOutOfStock && (
             <div className="p-3 bg-green-100 text-green-700 rounded shadow-sm flex items-center text-sm">
-              <FiCheckCircle className="mr-2 h-5 w-5 flex-shrink-0"/> Product "{scannedProduct.name}" added.
+              <FiCheckCircle className="mr-2 h-5 w-5 flex-shrink-0"/> {`Product "${scannedProduct.name}" added.`}
             </div>
           )}
           {scannedProduct && scannedProduct.isOutOfStock && (

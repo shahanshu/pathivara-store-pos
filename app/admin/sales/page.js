@@ -1,4 +1,3 @@
-// File: app/admin/sales/page.js
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -145,23 +144,21 @@ const AdminSalesPage = () => {
       fetchSalesSummary(filters);
       fetchSalesTransactions(filters);
     }
-  }, [user, filters.page]); // Re-fetch only when page changes here, date changes are manual
+  }, [user, filters, fetchSalesSummary, fetchSalesTransactions]); // Corrected dependencies
 
   const handleFilterChange = (e) => {
+    // Update filters state and reset to page 1. useEffect will trigger data fetching.
     setFilters(prev => ({ ...prev, [e.target.name]: e.target.value, page: 1 }));
   };
 
   const handleApplyFilters = () => {
-      // Reset to page 1 when applying new date filters
-      setFilters(prev => ({ ...prev, page: 1 }));
-      // Fetch data with new filters
-      if (user) {
-          fetchSalesSummary({ ...filters, page: 1 });
-          fetchSalesTransactions({ ...filters, page: 1 });
-      }
+    // Called by "Apply Filters" button and the refresh icon.
+    // Resets to page 1 (if not already) and ensures filters object is new, triggering useEffect.
+    setFilters(prev => ({ ...prev, page: 1 }));
   };
   
   const handlePageChange = (newPage) => {
+    // Update page in filters state. useEffect will trigger data fetching.
     setFilters(prev => ({ ...prev, page: newPage }));
   };
 
@@ -178,7 +175,7 @@ const AdminSalesPage = () => {
             onClick={handleApplyFilters}
             disabled={isLoadingSummary || isLoadingTransactions}
             className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300"
-            title="Refresh Data"
+            title="Refresh Data & Reset to Page 1" // Updated title
         >
             <FiRefreshCw className={`h-5 w-5 ${ (isLoadingSummary || isLoadingTransactions) ? 'animate-spin' : ''}`} />
         </button>
@@ -214,7 +211,7 @@ const AdminSalesPage = () => {
             disabled={isLoadingSummary || isLoadingTransactions}
             className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
           >
-            Apply Filters
+            Apply Filters & Reset Page {/* Updated button text */}
           </button>
         </div>
       </div>
