@@ -6,12 +6,10 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
 import Link from 'next/link';
 
-// AdminNavbar and AdminSidebar components remain the same as before
-
-const AdminNavbar = () => { /* ... same as before ... */
+const AdminNavbar = () => {
   const { user, logout } = useAuth();
   return (
-    <nav className="bg-gray-800 text-white p-4 shadow-md fixed top-0 left-0 right-0 z-50 h-16 flex items-center"> {/* Ensure fixed height */}
+    <nav className="bg-gray-800 text-white p-4 shadow-md fixed top-0 left-0 right-0 z-50 h-16 flex items-center">
       <div className="container mx-auto flex justify-between items-center">
         <Link href="/admin/dashboard" className="text-xl font-semibold hover:text-gray-300">
           Admin Panel
@@ -22,7 +20,7 @@ const AdminNavbar = () => { /* ... same as before ... */
               <span className="mr-4">Welcome, {user.displayName || user.email}</span>
               <button
                 onClick={logout}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm" // Adjusted padding
+                className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-3 rounded text-sm"
               >
                 Logout
               </button>
@@ -34,9 +32,9 @@ const AdminNavbar = () => { /* ... same as before ... */
   );
 };
 
-const AdminSidebar = () => { /* ... same as before ... */
+const AdminSidebar = () => {
   return (
-    <aside className="w-64 bg-gray-700 text-white p-4 space-y-2 fixed left-0 top-16 bottom-0 overflow-y-auto"> {/* Adjusted for fixed navbar */}
+    <aside className="w-64 bg-gray-700 text-white p-4 space-y-2 fixed left-0 top-16 bottom-0 overflow-y-auto">
       <h3 className="text-lg font-semibold mb-3">Navigation</h3>
       <Link href="/admin/dashboard" className="block py-2 px-3 rounded hover:bg-gray-600">
         Dashboard
@@ -53,14 +51,15 @@ const AdminSidebar = () => { /* ... same as before ... */
       <Link href="/admin/sales" className="block py-2 px-3 rounded hover:bg-gray-600">
         Sales Transactions
       </Link>
-      {/* Add more admin links here */}
+      <Link href="/admin/members" className="block py-2 px-3 rounded hover:bg-gray-600">
+        Members
+      </Link>
     </aside>
   );
 };
 
-
 export default function AdminLayout({ children }) {
-  const { user, loading, selectedRole } = useAuth(); // Add selectedRole
+  const { user, loading, selectedRole } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -68,8 +67,6 @@ export default function AdminLayout({ children }) {
       if (!user) {
         router.push('/login?redirect=/admin/dashboard');
       } else if (selectedRole !== 'admin') {
-        // If logged in but role is not admin (or not set), redirect to role selection
-        // This prevents direct navigation to /admin/* if role isn't 'admin'
         console.warn("User does not have admin role or role not selected. Redirecting.");
         router.push('/select-role');
       }
@@ -77,7 +74,6 @@ export default function AdminLayout({ children }) {
   }, [user, loading, selectedRole, router]);
 
   if (loading || !user || selectedRole !== 'admin') {
-    // Show a loading/unauthorized message while checking or if unauthorized
     return (
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <div className="text-center p-10 bg-white rounded-lg shadow-xl">
@@ -117,13 +113,12 @@ export default function AdminLayout({ children }) {
     );
   }
 
-  // User is authenticated and has admin role selected
   return (
     <div className="flex flex-col min-h-screen">
       <AdminNavbar />
-      <div className="flex flex-1 pt-16"> {/* Ensure this matches navbar height */}
+      <div className="flex flex-1 pt-16">
         <AdminSidebar />
-        <main className="flex-1 p-6 ml-64 bg-gray-100 overflow-y-auto"> {/* Ensure ml matches sidebar width */}
+        <main className="flex-1 p-6 ml-64 bg-gray-100 overflow-y-auto">
           {children}
         </main>
       </div>
