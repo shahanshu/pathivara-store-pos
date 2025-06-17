@@ -4,18 +4,18 @@ import "./globals.css";
 import { AuthProvider } from './contexts/AuthContext'; 
 export const metadata = {
   title: {
-    default: "My Awesome Department Store",
-    template: "%s | My Awesome Department Store",
+    default: "Sathimart Department",
+    template: "%s | sathimart Department Store",
   },
   description: "Discover a wide range of products at My Awesome Department Store. Quality, variety, and unbeatable prices on fashion, electronics, home goods, and more.",
   keywords: ["ecommerce", "department store", "online shopping", "fashion", "electronics", "home goods", "best deals"],
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://www.your-actual-domain.com',
-    siteName: 'My Awesome Department Store',
-    title: 'My Awesome Department Store',
-    description: 'Discover a wide range of products at My Awesome Department Store.',
+    url: 'https://www.pathivarastore.co.np',
+    siteName: 'Sathimart Department store',
+    title: 'Sathimart Department store',
+    description: 'Discover a wide range of products at Sathi Marth Department Store.',
   },
 };
 export default function RootLayout({ children }) {
