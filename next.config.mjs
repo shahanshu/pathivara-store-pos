@@ -24,4 +24,16 @@ const nextConfig = {
   },
 };
 
-export default nextConfig;
+// Import the PWA plugin
+import withPWA from 'next-pwa';
+
+// PWA configuration
+const pwaConfig = withPWA({
+  dest: "public", // Destination directory for the PWA files
+  register: true, // Register the PWA service worker
+  skipWaiting: true, // Skip waiting for service worker to activate
+  disable: process.env.NODE_ENV === "development", // Disable in development
+  // runtimeCaching, // You can add runtime caching strategies here if needed
+});
+
+export default pwaConfig(nextConfig);

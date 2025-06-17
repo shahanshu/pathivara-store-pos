@@ -16,7 +16,9 @@ export const metadata = {
     siteName: 'Sathimart Department store',
     title: 'Sathimart Department store',
     description: 'Discover a wide range of products at Sathi Marth Department Store.',
+      
   },
+  manifest:'/manifest.json'
 };
 export default function RootLayout({ children }) {
   return (
