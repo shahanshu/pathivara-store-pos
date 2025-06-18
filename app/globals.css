@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
-html {
-  scroll-padding-top: 80px; /* Corresponds to navbar h-20 (5rem = 80px if 1rem=16px) */
+
+
+
+html, body {
+  overflow-x: hidden;
+  width: 100%; /* Ensures body calculates its width based on the viewport, not potentially oversized content */
+  box-sizing: border-box; /* Tailwind preflight usually handles this, but explicit here is safe */
 }
