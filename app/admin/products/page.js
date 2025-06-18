@@ -1,11 +1,10 @@
 // ----- File: app/admin/products/page.js -----
 'use client';
-
-import { useState, useEffect, useCallback, useMemo } from 'react'; // Added useMemo
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
-import { FiSearch, FiEdit, FiTrash2, FiPlusCircle, FiTag, FiPackage, FiInbox } from 'react-icons/fi'; // Added/Updated icons
+import { FiSearch, FiEdit, FiTrash2, FiPlusCircle, FiTag, FiPackage, FiInbox } from 'react-icons/fi';
 
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([]);
@@ -78,7 +77,7 @@ const AdminProductsPage = () => {
       setProducts(prevProducts => prevProducts.filter(p => p._id !== productId));
     } catch (err) {
       console.error(err);
-      setError(err.message || 'An error occurred while deleting the product.');
+      setError(err.message);
       alert(err.message || 'An error occurred while deleting the product.');
     } finally {
       setIsDeleting(null);
@@ -147,7 +146,8 @@ const AdminProductsPage = () => {
                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Barcode</th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Price</th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                  <FiInbox className="inline mr-1 mb-px" /> Remaining Stock
+                  {/* MODIFIED: Renamed header for clarity */}
+                  <FiInbox className="inline mr-1 mb-px" /> Current Stock
                 </th>
                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   <FiPackage className="inline mr-1 mb-px" /> Total Imported
@@ -159,47 +159,57 @@ const AdminProductsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((product) => (
-                <tr key={product._id} className="hover:bg-gray-50">
-                  <td className="px-5 py-4 border-b border-gray-200 text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{product.name}</p>
-                  </td>
-                  <td className="px-5 py-4 border-b border-gray-200 text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{product.barcode}</p>
-                  </td>
-                  <td className="px-5 py-4 border-b border-gray-200 text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">Rs. {product.price.toFixed(2)}</p>
-                  </td>
-                  <td className="px-5 py-4 border-b border-gray-200 text-sm">
-                    <p className={`whitespace-no-wrap ${product.currentStock <= (product.lowStockThreshold ?? 10) ? 'text-red-600 font-semibold' : 'text-gray-900'}`}>
-                      {product.currentStock}
-                    </p>
-                  </td>
-                  <td className="px-5 py-4 border-b border-gray-200 text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{product.totalImportedEver || 0}</p>
-                  </td>
-                  <td className="px-5 py-4 border-b border-gray-200 text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">{product.category || 'N/A'}</p>
-                  </td>
-                  <td className="px-5 py-4 border-b border-gray-200 text-sm whitespace-nowrap">
-                    <Link
-                      href={`/admin/products/edit/${product._id}`}
-                      className={`text-indigo-600 hover:text-indigo-900 mr-3 inline-block ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
-                      title="Edit Product"
-                    >
-                      <FiEdit size={18}/>
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteProduct(product._id, product.name)}
-                      className={`text-red-600 hover:text-red-900 inline-block ${isDeleting === product._id ? 'opacity-50 pointer-events-none' : ''}`}
-                      disabled={isDeleting === product._id}
-                      title="Delete Product"
-                    >
-                      {isDeleting === product._id ? <LoadingSpinner size="sm" color="text-red-600"/> : <FiTrash2 size={18}/>}
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {filteredProducts.map((product) => {
+                // MODIFIED: Added more granular stock highlighting logic
+                const stockClass =
+                  product.currentStock === 0
+                    ? 'text-red-600 font-semibold' // Out of stock is red
+                    : product.currentStock <= (product.lowStockThreshold ?? 10)
+                      ? 'text-yellow-600 font-semibold' // Low stock is yellow
+                      : 'text-gray-900'; // Normal stock
+
+                return (
+                  <tr key={product._id} className="hover:bg-gray-50">
+                    <td className="px-5 py-4 border-b border-gray-200 text-sm">
+                      <p className="text-gray-900 whitespace-no-wrap">{product.name}</p>
+                    </td>
+                    <td className="px-5 py-4 border-b border-gray-200 text-sm">
+                      <p className="text-gray-900 whitespace-no-wrap">{product.barcode}</p>
+                    </td>
+                    <td className="px-5 py-4 border-b border-gray-200 text-sm">
+                      <p className="text-gray-900 whitespace-no-wrap">Rs. {product.price.toFixed(2)}</p>
+                    </td>
+                    <td className="px-5 py-4 border-b border-gray-200 text-sm">
+                      <p className={`whitespace-no-wrap ${stockClass}`}>
+                        {product.currentStock}
+                      </p>
+                    </td>
+                    <td className="px-5 py-4 border-b border-gray-200 text-sm">
+                      <p className="text-gray-900 whitespace-no-wrap">{product.totalImportedEver || 0}</p>
+                    </td>
+                    <td className="px-5 py-4 border-b border-gray-200 text-sm">
+                      <p className="text-gray-900 whitespace-no-wrap">{product.category || 'N/A'}</p>
+                    </td>
+                    <td className="px-5 py-4 border-b border-gray-200 text-sm whitespace-nowrap">
+                      <Link
+                        href={`/admin/products/edit/${product._id}`}
+                        className={`text-indigo-600 hover:text-indigo-900 mr-3 inline-block ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
+                        title="Edit Product"
+                      >
+                        <FiEdit size={18} />
+                      </Link>
+                      <button
+                        onClick={() => handleDeleteProduct(product._id, product.name)}
+                        className={`text-red-600 hover:text-red-900 inline-block ${isDeleting === product._id ? 'opacity-50 pointer-events-none' : ''}`}
+                        disabled={isDeleting === product._id}
+                        title="Delete Product"
+                      >
+                        {isDeleting === product._id ? <LoadingSpinner size="sm" color="text-red-600" /> : <FiTrash2 size={18} />}
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -209,4 +219,3 @@ const AdminProductsPage = () => {
 };
 
 export default AdminProductsPage;
-// ----- End of File: app/admin/products/page.js -----

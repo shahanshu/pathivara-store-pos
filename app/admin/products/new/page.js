@@ -2,25 +2,24 @@
 'use client';
 
 import { useState } from 'react';
-// import { useRouter } from 'next/navigation'; // Not used, can be removed if not needed elsewhere
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
-import { FiArrowLeft } from 'react-icons/fi'; // Add this import
+import { FiArrowLeft } from 'react-icons/fi';
 
 const NewProductPage = () => {
   const [name, setName] = useState("");
   const [barcode, setBarcode] = useState("");
   const [price, setPrice] = useState("");
-  const [description, setDescription] = useState("");
+  // REMOVED: Description and Category states are no longer needed.
+  // const [description, setDescription] = useState("");
+  // const [category, setCategory] = useState("");
   const [currentStock, setCurrentStock] = useState(0);
-  const [category, setCategory] = useState(""); 
   const [lowStockThreshold, setLowStockThreshold] = useState(10);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  // const router = useRouter(); // Not used
   const { user } = useAuth();
 
   const handleSubmit = async (e) => {
@@ -62,19 +61,28 @@ const NewProductPage = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
+        // MODIFIED: Payload updated to remove description and category
         body: JSON.stringify({
-          name, barcode, price: parseFloat(price), description,
-          currentStock: parseInt(currentStock), category,
+          name,
+          barcode,
+          price: parseFloat(price),
+          currentStock: parseInt(currentStock),
           lowStockThreshold: parseInt(lowStockThreshold)
         }),
       });
+
       const data = await response.json();
       if (!response.ok || !data.success) {
         throw new Error(data.message || `Failed to create product: ${response.status}`);
       }
+
       setSuccessMessage(`Product "${data.product.name}" created successfully!`);
-      setName(""); setBarcode(""); setPrice(""); setDescription("");
-      setCurrentStock(0); setCategory(""); setLowStockThreshold(10);
+      // MODIFIED: Clear only the remaining fields
+      setName("");
+      setBarcode("");
+      setPrice("");
+      setCurrentStock(0);
+      setLowStockThreshold(10);
     } catch (err) {
       console.error(err);
       setError(err.message);
@@ -99,40 +107,33 @@ const NewProductPage = () => {
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Product Name <span className="text-red-500">*</span></label>
           <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <label htmlFor="barcode" className="block text-sm font-medium text-gray-700">Barcode <span className="text-red-500">*</span></label>
           <input type="text" id="barcode" value={barcode} onChange={(e) => setBarcode(e.target.value)} required
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price <span className="text-red-500">*</span></label>
           <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} required
-            step="0.01" min="0.01" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+            step="0.01" min="0.01" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <label htmlFor="currentStock" className="block text-sm font-medium text-gray-700">Current Stock</label>
-          <input type="number" id="currentStock" value={currentStock} onChange={(e) => setCurrentStock(e.target.value)} min="0" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+          <input type="number" id="currentStock" value={currentStock} onChange={(e) => setCurrentStock(e.target.value)} min="0" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
+        {/* REMOVED: Category Input Field */}
+        {/* REMOVED: Low Stock Threshold Input Field - It's now managed automatically */}
         <div>
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-          <input type="text" id="category" value={category} onChange={(e) => setCategory(e.target.value)}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+           <label htmlFor="lowStockThreshold" className="block text-sm font-medium text-gray-700">Low Stock Threshold</label>
+           <input type="number" id="lowStockThreshold" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} min="0" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
+        {/* REMOVED: Description Textarea */}
         <div>
-          <label htmlFor="lowStockThreshold" className="block text-sm font-medium text-gray-700">Low Stock Threshold</label>
-          <input type="number" id="lowStockThreshold" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} min="0" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-        </div>
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
-        </div>
-        <div>
-          <button 
-            type="submit" 
-            disabled={isSubmitting} 
+          <button
+            type="submit"
+            disabled={isSubmitting}
             className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed"
           >
             {isSubmitting ? (
@@ -151,4 +152,3 @@ const NewProductPage = () => {
 };
 
 export default NewProductPage;
-// ----- End of File: app/admin/products/new/page.js -----
