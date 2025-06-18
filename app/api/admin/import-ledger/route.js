@@ -1,4 +1,5 @@
 // File: app/api/admin/import-ledger/route.js
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
@@ -9,7 +10,7 @@ import { syncProductToRTDB, updateProductInRTDB } from '@/lib/firebaseSync';
 export const POST = withAdminAuth(async function POST(request, { user }) {
   console.log("API: Received POST request to /api/admin/import-ledger");
   const { db } = await connectToDatabase();
-  let session; // For transactions if needed, though we process items sequentially here
+  let session; // Transactions are not used in this version, but the variable is kept for potential future use
 
   try {
     const body = await request.json();
@@ -32,14 +33,13 @@ export const POST = withAdminAuth(async function POST(request, { user }) {
 
     // --- Process Each Item ---
     for (const item of items) {
-      // Basic validation for each item
       if (!item.barcode || !item.productName || item.quantityImported == null || item.ratePerItem == null) {
         throw new Error(`Missing data for an item. Barcode: ${item.barcode || 'N/A'}. All items require barcode, name, quantity, and rate.`);
       }
 
       const quantityImported = parseInt(item.quantityImported, 10);
       if (isNaN(quantityImported) || quantityImported <= 0) {
-          throw new Error(`Quantity for item ${item.productName} must be a positive number.`);
+        throw new Error(`Quantity for item ${item.productName} must be a positive number.`);
       }
 
       let productId;
@@ -49,7 +49,6 @@ export const POST = withAdminAuth(async function POST(request, { user }) {
         // --- Create New Product ---
         console.log(`API: Item '${item.productName}' is new. Creating product.`);
         
-        // CRITICAL FIX: Robust price validation for new products
         if (item.newProductDetails.price == null || String(item.newProductDetails.price).trim() === "") {
             throw new Error(`Selling price is required for new product '${item.productName}'.`);
         }
@@ -57,7 +56,8 @@ export const POST = withAdminAuth(async function POST(request, { user }) {
         if (isNaN(parsedPrice) || parsedPrice <= 0) {
             throw new Error(`Selling price for new product '${item.productName}' must be a positive number.`);
         }
-
+        
+        // MODIFIED: Removed category from new product data object
         const newProductData = {
           barcode: item.barcode,
           name: item.productName,
@@ -66,23 +66,22 @@ export const POST = withAdminAuth(async function POST(request, { user }) {
           totalImportedEver: quantityImported,
           totalSoldEver: 0,
           lowStockThreshold: parseInt(item.newProductDetails.lowStockThreshold, 10) || 10,
-          category: item.newProductDetails.category || null,
           createdAt: new Date(),
           updatedAt: new Date(),
         };
+
         const insertResult = await db.collection('products').insertOne(newProductData);
         productId = insertResult.insertedId;
         await syncProductToRTDB({ _id: productId, ...newProductData });
-        
+
       } else {
         // --- Update Existing Product ---
         if (!existingProduct) {
-            // This happens if isNewProduct was false but product wasn't found - a data inconsistency.
-            throw new Error(`Product with barcode ${item.barcode} was expected to exist but was not found.`);
+          throw new Error(`Product with barcode ${item.barcode} was expected to exist but was not found.`);
         }
         console.log(`API: Item '${existingProduct.name}' exists. Updating stock.`);
         productId = existingProduct._id;
-        
+
         const updateResult = await db.collection('products').updateOne(
           { _id: productId },
           { 
@@ -95,17 +94,17 @@ export const POST = withAdminAuth(async function POST(request, { user }) {
         );
         
         if(updateResult.modifiedCount === 1) {
-             const newStock = (existingProduct.currentStock || 0) + quantityImported;
-             await updateProductInRTDB(existingProduct.barcode, { currentStock: newStock });
+          const newStock = (existingProduct.currentStock || 0) + quantityImported;
+          await updateProductInRTDB(existingProduct.barcode, { currentStock: newStock });
         }
       }
-
+      
       const totalCostForItem = parseFloat(item.ratePerItem) * quantityImported;
       grandTotalCost += totalCostForItem;
       processedItems.push({
         productId: new ObjectId(productId),
         barcode: item.barcode,
-        productName: existingProduct?.name || item.productName, // Use actual name if exists
+        productName: existingProduct?.name || item.productName,
         quantityImported: quantityImported,
         ratePerItem: parseFloat(item.ratePerItem),
         totalCostForItem: totalCostForItem,
@@ -125,7 +124,7 @@ export const POST = withAdminAuth(async function POST(request, { user }) {
     
     const result = await db.collection('importLedgerEntries').insertOne(newLedgerEntry);
     const createdEntry = await db.collection('importLedgerEntries').findOne({_id: result.insertedId});
-
+    
     return NextResponse.json({ success: true, message: 'Import ledger entry created successfully.', entry: createdEntry }, { status: 201 });
 
   } catch (error) {
@@ -137,46 +136,44 @@ export const POST = withAdminAuth(async function POST(request, { user }) {
   }
 });
 
-
 // GET all import ledger entries (for the main list view)
 export const GET = withAdminAuth(async function GET(request, { user }) {
- try {
- const { db } = await connectToDatabase();
- 
- const entries = await db.collection('importLedgerEntries')
- .aggregate([
- { $sort: { importDate: -1, createdAt: -1 } },
- {
- $lookup: {
- from: 'importers',
- localField: 'importerId',
- foreignField: '_id',
- as: 'importerInfo'
- }
- },
- {
- $unwind: { 
- path: '$importerInfo',
- preserveNullAndEmptyArrays: true 
- }
- },
- {
- $project: { 
- _id: 1,
- importDate: 1,
- invoiceNumber: 1,
- grandTotalCost: 1,
- createdAt: 1,
- itemCount: { $size: "$items" },
- 'importerInfo.name': 1,
- 'importerInfo._id': 1
- }
- }
- ])
- .toArray();
- return NextResponse.json({ success: true, entries }, { status: 200 });
- } catch (error) {
- console.error("API: CRITICAL ERROR in GET /api/admin/import-ledger:", error);
- return NextResponse.json({ success: false, message: 'Failed to fetch import ledger entries', error: error.message }, { status: 500 });
- }
+  try {
+    const { db } = await connectToDatabase();
+    const entries = await db.collection('importLedgerEntries')
+      .aggregate([
+        { $sort: { importDate: -1, createdAt: -1 } },
+        {
+          $lookup: {
+            from: 'importers',
+            localField: 'importerId',
+            foreignField: '_id',
+            as: 'importerInfo'
+          }
+        },
+        {
+          $unwind: { 
+            path: '$importerInfo',
+            preserveNullAndEmptyArrays: true 
+          }
+        },
+        {
+          $project: { 
+            _id: 1,
+            importDate: 1,
+            invoiceNumber: 1,
+            grandTotalCost: 1,
+            createdAt: 1,
+            itemCount: { $size: "$items" },
+            'importerInfo.name': 1,
+            'importerInfo._id': 1
+          }
+        }
+      ])
+      .toArray();
+    return NextResponse.json({ success: true, entries }, { status: 200 });
+  } catch (error) {
+    console.error("API: CRITICAL ERROR in GET /api/admin/import-ledger:", error);
+    return NextResponse.json({ success: false, message: 'Failed to fetch import ledger entries', error: error.message }, { status: 500 });
+  }
 });

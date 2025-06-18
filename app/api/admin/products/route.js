@@ -1,4 +1,5 @@
 // File: app/api/admin/products/route.js
+
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { withAdminAuth } from '@/utils/apiAuth';
@@ -32,25 +33,27 @@ export const POST = withAdminAuth(async function POST(request, { user }) {
       return NextResponse.json({ success: false, message: 'Product with this barcode already exists' }, { status: 409 });
     }
 
-    // MODIFIED: Use the totalImportedEver from the form and apply robust defaults
+    // Use the totalImportedEver from the form and apply robust defaults
     const currentStock = productData.currentStock ?? 0;
     const totalImportedEver = productData.totalImportedEver ?? currentStock;
-    
+
     // Server-side validation
     if(currentStock > totalImportedEver) {
-        return NextResponse.json({ success: false, message: 'Current Stock cannot be greater than Total Imported.' }, { status: 400 });
+      return NextResponse.json({ success: false, message: 'Current Stock cannot be greater than Total Imported.' }, { status: 400 });
     }
-
+    
+    // MODIFIED: Removed 'category' from the new product object definition
     const newProduct = {
       ...productData,
       currentStock: currentStock,
       totalImportedEver: totalImportedEver,
       totalSoldEver: 0,
-      category: productData.category || null,
       lowStockThreshold: productData.lowStockThreshold ?? 10,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
+    // Explicitly delete the category field in case it is sent from the client
+    delete newProduct.category;
 
     const result = await db.collection('products').insertOne(newProduct);
     createdProductInMongo = await db.collection('products').findOne({ _id: result.insertedId });
