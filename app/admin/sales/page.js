@@ -1,22 +1,32 @@
+// app/admin/sales/page.js
 'use client';
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
 import { FiCalendar, FiDollarSign, FiShoppingCart, FiTrendingUp, FiArrowLeft, FiArrowRight, FiFileText, FiRefreshCw } from 'react-icons/fi';
 
-// Helper to format date
-const formatDate = (dateString) => {
+// Helper to format date (YYYY-MM-DD for input fields)
+const formatDateForInput = (date) => {
+  return date.toISOString().split('T')[0];
+};
+
+// Helper to format date for display (e.g., Jun 16, 2024)
+const formatDateDisplay = (dateString) => {
   if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString();
+  // Add 'T00:00:00' to ensure date is parsed in local timezone consistently
+  return new Date(dateString + 'T00:00:00').toLocaleDateString(undefined, {
+    year: 'numeric', month: 'short', day: 'numeric'
+  });
 };
 
 const formatDateTime = (dateString) => {
   if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleString();
-}
+  return new Date(dateString).toLocaleString([], {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+};
 
-// Helper to format currency
 const formatCurrency = (amount) => {
   return "Rs. " + new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', currencyDisplay: 'code' })
     .format(amount || 0)
@@ -24,25 +34,22 @@ const formatCurrency = (amount) => {
     .trim();
 };
 
-// Simple Bar Chart Component (CSS-based for now)
 const SimpleDailySalesChart = ({ data }) => {
   if (!data || data.length === 0) {
     return <p className="text-gray-500 text-center py-4">No daily sales data to display for the selected period.</p>;
   }
-
   const maxRevenue = Math.max(...data.map(d => d.totalRevenue), 0);
-
   return (
     <div className="bg-gray-50 p-4 rounded-lg">
       <h3 className="text-md font-semibold text-gray-700 mb-3">Daily Sales Trend (Revenue)</h3>
       <div className="flex items-end h-48 space-x-2 overflow-x-auto pb-2">
         {data.map(day => (
-          <div key={day.date} className="flex flex-col items-center flex-shrink-0 w-16" title={`${formatDate(day.date)}: ${formatCurrency(day.totalRevenue)}`}>
+          <div key={day.date} className="flex flex-col items-center flex-shrink-0 w-16" title={`${formatDateDisplay(day.date)}: ${formatCurrency(day.totalRevenue)}`}>
             <div
               className="w-10 bg-blue-500 hover:bg-blue-600 transition-colors"
               style={{ height: `${maxRevenue > 0 ? (day.totalRevenue / maxRevenue) * 100 : 0}%` }}
             ></div>
-            <span className="text-xs text-gray-600 mt-1">{new Date(day.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric'})}</span>
+            <span className="text-xs text-gray-600 mt-1">{new Date(day.date + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
           </div>
         ))}
       </div>
@@ -50,33 +57,32 @@ const SimpleDailySalesChart = ({ data }) => {
   );
 };
 
-
 const AdminSalesPage = () => {
   const { user } = useAuth();
   const [summary, setSummary] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, limit: 10 });
+  const [pagination, setPagination] = useState({ currentPage: 1, totalPages: 1, limit: 10, totalTransactions: 0 });
   
   const [isLoadingSummary, setIsLoadingSummary] = useState(true);
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(true);
   const [error, setError] = useState("");
 
-  const today = new Date().toISOString().split('T')[0];
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
-  const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split('T')[0];
+  // Default to yesterday and today
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
 
   const [filters, setFilters] = useState({
-    startDate: thirtyDaysAgoStr,
-    endDate: today,
+    startDate: formatDateForInput(yesterday), // Default to yesterday
+    endDate: formatDateForInput(today),     // Default to today
     page: 1,
   });
 
   const fetchSalesSummary = useCallback(async (currentFilters) => {
     if (!user) {
-        setError("User not authenticated.");
-        setIsLoadingSummary(false);
-        return;
+      setError("User not authenticated.");
+      setIsLoadingSummary(false);
+      return;
     }
     setIsLoadingSummary(true);
     setError("");
@@ -86,7 +92,6 @@ const AdminSalesPage = () => {
         startDate: currentFilters.startDate,
         endDate: currentFilters.endDate,
       }).toString();
-
       const response = await fetch(`/api/admin/sales/summary?${queryParams}`, {
         headers: { 'Authorization': `Bearer ${token}` },
       });
@@ -100,6 +105,7 @@ const AdminSalesPage = () => {
     } catch (err) {
       console.error(err);
       setError(err.message);
+      setSummary(null); // Clear summary on error
     } finally {
       setIsLoadingSummary(false);
     }
@@ -107,9 +113,9 @@ const AdminSalesPage = () => {
 
   const fetchSalesTransactions = useCallback(async (currentFilters) => {
     if (!user) {
-        setError("User not authenticated.");
-        setIsLoadingTransactions(false);
-        return;
+      setError("User not authenticated.");
+      setIsLoadingTransactions(false);
+      return;
     }
     setIsLoadingTransactions(true);
     setError("");
@@ -129,7 +135,12 @@ const AdminSalesPage = () => {
       const data = await response.json();
       if (data.success) {
         setTransactions(data.transactions);
-        setPagination(data.pagination);
+        setPagination(prev => ({ // Preserve limit, update others
+            ...prev,
+            currentPage: data.pagination.currentPage,
+            totalPages: data.pagination.totalPages,
+            totalTransactions: data.pagination.totalTransactions,
+        }));
       } else {
         throw new Error(data.message || 'Failed to parse transaction data');
       }
@@ -137,34 +148,38 @@ const AdminSalesPage = () => {
       console.error(err);
       setError(err.message);
       setTransactions([]); // Clear transactions on error
+      setPagination({ currentPage: 1, totalPages: 1, limit: 10, totalTransactions: 0 }); // Reset pagination
     } finally {
       setIsLoadingTransactions(false);
     }
-  }, [user, pagination.limit]);
+  }, [user, pagination.limit]); // pagination.limit is a dependency now
 
   useEffect(() => {
     if (user) {
       fetchSalesSummary(filters);
       fetchSalesTransactions(filters);
     }
-  }, [user, filters, fetchSalesSummary, fetchSalesTransactions]); // Corrected dependencies
+  }, [user, filters, fetchSalesSummary, fetchSalesTransactions]);
 
   const handleFilterChange = (e) => {
-    // Update filters state and reset to page 1. useEffect will trigger data fetching.
     setFilters(prev => ({ ...prev, [e.target.name]: e.target.value, page: 1 }));
   };
 
   const handleApplyFilters = () => {
-    // Called by "Apply Filters" button and the refresh icon.
-    // Resets to page 1 (if not already) and ensures filters object is new, triggering useEffect.
-    setFilters(prev => ({ ...prev, page: 1 }));
+    // This function can be used if you want a separate "Apply" button
+    // For now, useEffect triggers on filter changes.
+    // If you add an "Apply" button, call this, which might just involve
+    // re-setting filters to trigger useEffect if direct state update is used,
+    // or directly calling fetch functions if state update doesn't guarantee new object identity.
+    // For simplicity with current setup:
+    setFilters(prev => ({ ...prev, page: 1 })); // Ensure page is reset and filters object is new
   };
   
   const handlePageChange = (newPage) => {
-    // Update page in filters state. useEffect will trigger data fetching.
-    setFilters(prev => ({ ...prev, page: newPage }));
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setFilters(prev => ({ ...prev, page: newPage }));
+    }
   };
-
 
   if (!user && !isLoadingSummary && !isLoadingTransactions) {
     return <p className="text-red-500 p-4">User not authenticated. Please login.</p>;
@@ -175,12 +190,12 @@ const AdminSalesPage = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Sales Transactions & Summary</h1>
         <button
-            onClick={handleApplyFilters}
-            disabled={isLoadingSummary || isLoadingTransactions}
-            className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300"
-            title="Refresh Data & Reset to Page 1" // Updated title
+          onClick={handleApplyFilters} // This will re-trigger fetches by updating filters state
+          disabled={isLoadingSummary || isLoadingTransactions}
+          className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:bg-gray-300"
+          title="Refresh Data & Reset to Page 1"
         >
-            <FiRefreshCw className={`h-5 w-5 ${ (isLoadingSummary || isLoadingTransactions) ? 'animate-spin' : ''}`} />
+          <FiRefreshCw className={`h-5 w-5 ${ (isLoadingSummary || isLoadingTransactions) ? 'animate-spin' : ''}`} />
         </button>
       </div>
 
@@ -209,13 +224,15 @@ const AdminSalesPage = () => {
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
+          {/* Apply button is now the refresh icon
           <button
             onClick={handleApplyFilters}
             disabled={isLoadingSummary || isLoadingTransactions}
             className="w-full md:w-auto px-4 py-2 bg-indigo-600 text-white font-semibold rounded-md shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400"
           >
-            Apply Filters & Reset Page {/* Updated button text */}
+            Apply Filters & Reset Page
           </button>
+          */}
         </div>
       </div>
 
@@ -226,13 +243,13 @@ const AdminSalesPage = () => {
         <div className="flex justify-center items-center py-10"><LoadingSpinner size="lg" /> <span className="ml-2">Loading summary...</span></div>
       ) : summary && (
         <div className="mb-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <InfoCard Icon={FiDollarSign} title="Total Revenue" value={formatCurrency(summary.summary.totalRevenue)} />
-                <InfoCard Icon={FiShoppingCart} title="Total Transactions" value={summary.summary.totalTransactions.toLocaleString()} />
-                <InfoCard Icon={FiTrendingUp} title="Avg. Order Value" value={formatCurrency(summary.summary.averageOrderValue)} />
-                <InfoCard Icon={FiFileText} title="Total Items Sold" value={summary.summary.totalItemsSold.toLocaleString()} />
-            </div>
-            <SimpleDailySalesChart data={summary.dailySales} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+            <InfoCard Icon={FiDollarSign} title="Total Revenue" value={formatCurrency(summary.summary.totalRevenue)} />
+            <InfoCard Icon={FiShoppingCart} title="Total Transactions" value={summary.summary.totalTransactions.toLocaleString()} />
+            <InfoCard Icon={FiTrendingUp} title="Avg. Order Value" value={formatCurrency(summary.summary.averageOrderValue)} />
+            <InfoCard Icon={FiFileText} title="Total Items Sold" value={summary.summary.totalItemsSold.toLocaleString()} />
+          </div>
+          <SimpleDailySalesChart data={summary.dailySales} />
         </div>
       )}
 
@@ -248,7 +265,7 @@ const AdminSalesPage = () => {
                 <tr className="bg-gray-100">
                   <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date & Time</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Transaction ID</th>
-                   <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Items</th>
+                  <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Items</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider">Grand Total</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Payment Method</th>
                   <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
@@ -256,10 +273,10 @@ const AdminSalesPage = () => {
               </thead>
               <tbody>
                 {transactions.map((tx) => (
-                  <tr key={tx._id} className="hover:bg-gray-50">
+                  <tr key={tx._id || tx.transactionId} className="hover:bg-gray-50">
                     <td className="px-5 py-4 border-b border-gray-200 text-sm">{formatDateTime(tx.transactionDate)}</td>
                     <td className="px-5 py-4 border-b border-gray-200 text-sm">
-                        <span className="font-mono text-xs" title={tx.transactionId}>{tx.transactionId?.substring(0,18) || 'N/A'}{tx.transactionId?.length > 18 ? '...' : ''}</span>
+                      <span className="font-mono text-xs" title={tx.transactionId}>{tx.transactionId?.substring(0,18) || 'N/A'}{tx.transactionId?.length > 18 ? '...' : ''}</span>
                     </td>
                     <td className="px-5 py-4 border-b border-gray-200 text-sm text-center">{tx.items.reduce((sum, item) => sum + item.quantitySold, 0)}</td>
                     <td className="px-5 py-4 border-b border-gray-200 text-sm text-right">{formatCurrency(tx.grandTotal)}</td>
@@ -267,7 +284,7 @@ const AdminSalesPage = () => {
                     <td className="px-5 py-4 border-b border-gray-200 text-sm">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
                         ${tx.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                          tx.status === 'returned' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
+                        tx.status === 'returned' || tx.status === 'partially_returned' ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-800'}`}>
                         {tx.status}
                       </span>
                     </td>
