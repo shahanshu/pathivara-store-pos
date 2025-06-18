@@ -6,17 +6,18 @@ import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/app/contexts/AuthContext'; // Corrected path
-import Head from 'next/head'; // For Turnstile script
+import Head from 'next/head'; // For Turnstile script (though script loaded in useEffect)
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // For login process
   const [turnstileToken, setTurnstileToken] = useState('');
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const turnstileWidgetRef = useRef(null);
+  const [turnstileReady, setTurnstileReady] = useState(false); // New state
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -24,67 +25,118 @@ const LoginPage = () => {
     }
   }, [user, authLoading, router]);
 
+  const renderTurnstile = () => {
+    if (typeof window === 'undefined' || !window.turnstile || !document.getElementById('turnstile-widget-container')) {
+      return;
+    }
+
+    const turnstileDisplaySize = window.innerWidth < 400 ? 'compact' : 'normal';
+
+    if (turnstileWidgetRef.current && window.turnstile) {
+      try {
+        window.turnstile.remove(turnstileWidgetRef.current);
+      } catch (e) {
+        console.warn("Error removing existing turnstile widget during re-render:", e);
+      }
+      turnstileWidgetRef.current = null; 
+    }
+    
+    turnstileWidgetRef.current = window.turnstile.render('#turnstile-widget-container', {
+      sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+      size: turnstileDisplaySize,
+      callback: function(token) {
+        // console.log("Turnstile token:", token);
+        setTurnstileToken(token);
+        setError(''); // Clear CAPTCHA error if user completes it
+      },
+      'expired-callback': function() {
+        console.log("Turnstile token expired");
+        setTurnstileToken('');
+        // setError('CAPTCHA challenge expired. Please try again.'); // Optional: set error on expiry
+        if (turnstileWidgetRef.current && window.turnstile) { // Attempt to reset if expired
+            window.turnstile.reset(turnstileWidgetRef.current);
+        }
+      },
+      'error-callback': function() {
+        console.error("Turnstile error callback triggered.");
+        setError('CAPTCHA challenge failed. Please refresh and try again.');
+        setTurnstileToken('');
+      }
+    });
+  };
+  
   useEffect(() => {
-    // Dynamically load Turnstile script and render widget
-    if (typeof window !== 'undefined' && window.turnstile) {
-      renderTurnstile();
-    } else {
+    const loadAndRenderTurnstile = () => {
+      if (typeof window.turnstile !== 'undefined') {
+        setTurnstileReady(true); // Mark as ready and trigger render via separate useEffect
+        return;
+      }
+
+      if (document.querySelector('script[src^="https://challenges.cloudflare.com/turnstile"]')) {
+        // Script tag exists, set up callback if not already set or turnstile object not yet available
+        if (typeof window.onloadTurnstileCallback !== 'function' && typeof window.turnstile === 'undefined') {
+          window.onloadTurnstileCallback = () => {
+            setTurnstileReady(true);
+          };
+        } else if (typeof window.turnstile !== 'undefined') {
+          // Script tag exists and turnstile object is available
+          setTurnstileReady(true);
+        }
+        // If callback is already set, it will handle setting turnstileReady
+        return;
+      }
+      
       const script = document.createElement('script');
       script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback';
       script.async = true;
       script.defer = true;
+      
+      window.onloadTurnstileCallback = () => {
+        setTurnstileReady(true);
+      };
       document.head.appendChild(script);
-      window.onloadTurnstileCallback = renderTurnstile;
+    };
+
+    if (typeof window !== 'undefined') { // Ensure window object is available
+        loadAndRenderTurnstile();
     }
 
     return () => {
-      // Clean up widget if component unmounts
       if (turnstileWidgetRef.current && window.turnstile) {
-        window.turnstile.remove(turnstileWidgetRef.current);
-      }
-      // Clean up callback
-      delete window.onloadTurnstileCallback;
-    };
-  }, []);
-
-  const renderTurnstile = () => {
-    if (window.turnstile && document.getElementById('turnstile-widget-container')) {
-        turnstileWidgetRef.current = window.turnstile.render('#turnstile-widget-container', {
-        sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY, // Your site key from .env.local
-        callback: function(token) {
-          console.log("Turnstile token:", token);
-          setTurnstileToken(token);
-        },
-        'expired-callback': function() {
-            console.log("Turnstile token expired");
-            setTurnstileToken('');
-            if (turnstileWidgetRef.current) {
-                window.turnstile.reset(turnstileWidgetRef.current);
-            }
-        },
-        'error-callback': function() {
-            console.error("Turnstile error");
-            setError('CAPTCHA challenge failed. Please try again.');
+        try {
+          window.turnstile.remove(turnstileWidgetRef.current);
+        } catch (e) {
+          console.warn("Turnstile cleanup error on unmount:", e);
         }
-      });
-    }
-  };
+      }
+      // Only delete the callback if this instance might have been the one that set it
+      // and no other component relies on it. More complex scenarios might need better global state management for this.
+      if (typeof window !== 'undefined' && window.onloadTurnstileCallback) {
+        // A simple check; might need refinement if multiple Turnstile instances use this global cb
+        delete window.onloadTurnstileCallback;
+      }
+    };
+  }, []); // Run once on mount
 
+  useEffect(() => {
+    if (turnstileReady) {
+      renderTurnstile();
+    }
+  }, [turnstileReady]); // Re-render when Turnstile script is ready
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
-
+    
     if (!turnstileToken) {
       setError('Please complete the CAPTCHA challenge.');
-      setLoading(false);
       // Optionally reset Turnstile if it wasn't completed
       if (turnstileWidgetRef.current && window.turnstile) {
         window.turnstile.reset(turnstileWidgetRef.current);
       }
       return;
     }
+    setLoading(true);
 
     try {
       // 1. Verify Turnstile token with your backend
@@ -105,7 +157,8 @@ const LoginPage = () => {
 
       // 2. If CAPTCHA is valid, proceed with Firebase login
       await signInWithEmailAndPassword(auth, email, password);
-      router.push('/select-role'); // Redirect to role selection page
+      // Redirect is handled by the first useEffect monitoring 'user' state
+      // router.push('/select-role'); // This line might be redundant
     } catch (firebaseError) {
       console.error("Firebase login error:", firebaseError);
       setError(firebaseError.message || 'Failed to login. Please check your credentials.');
@@ -118,20 +171,30 @@ const LoginPage = () => {
   };
 
   if (authLoading || (!authLoading && user)) {
+    // Show loading indicator while checking auth state or if user is already logged in (will be redirected)
     return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
   }
 
   return (
     <>
-      {/* Head tag for script loading is not ideal in App Router components,
-          but necessary for global callback for Turnstile.
-          Alternatively, manage script loading entirely within useEffect. */}
-      <Head>
-        {/* The script is loaded in useEffect to ensure window object is available */}
-      </Head>
+      {/* 
+        Head tag for script loading is not ideal in App Router components here,
+        as we are loading script dynamically in useEffect. 
+        If you were to use the Head component for the script, 
+        it would look like:
+        <Head>
+          <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" async defer></script>
+        </Head>
+        But we've opted for dynamic loading via useEffect for more control.
+      */}
       <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
           <div>
+            <img 
+                className="mx-auto h-20 w-auto" // Increased logo size
+                src="/images/sathimart_logo.png" 
+                alt="Sathimart Department Store" 
+            />
             <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
               Sign in to your account
             </h2>
@@ -170,15 +233,19 @@ const LoginPage = () => {
             </div>
 
             {/* Turnstile Widget Container */}
-            <div id="turnstile-widget-container" className="my-4 flex justify-center"></div>
+            <div id="turnstile-widget-container" className="my-4 flex justify-center">
+              {/* Turnstile widget will be rendered here */}
+              {/* Fallback loading state for Turnstile itself if needed, but usually it's quick */}
+              {!turnstileReady && <div className="text-sm text-gray-500">Loading CAPTCHA...</div>}
+            </div>
 
             {error && <p className="text-red-500 text-sm text-center">{error}</p>}
 
             <div>
               <button
                 type="submit"
-                disabled={loading || !turnstileToken}
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300"
+                disabled={loading || !turnstileToken} // Disable if login in progress or CAPTCHA not completed
+                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </button>
