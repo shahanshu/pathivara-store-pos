@@ -5,23 +5,23 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import { useAuth } from '@/app/contexts/AuthContext'; // Corrected path
-import Head from 'next/head'; // For Turnstile script (though script loaded in useEffect)
+import { useAuth } from '@/app/contexts/AuthContext';
+import Head from 'next/head';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false); // For login process
+  const [loading, setLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const turnstileWidgetRef = useRef(null);
-  const [turnstileReady, setTurnstileReady] = useState(false); // New state
+  const [turnstileReady, setTurnstileReady] = useState(false);
 
   useEffect(() => {
     if (!authLoading && user) {
-      router.push('/select-role'); // Redirect if already logged in
+      router.push('/select-role');
     }
   }, [user, authLoading, router]);
 
@@ -30,7 +30,8 @@ const LoginPage = () => {
       return;
     }
 
-    const turnstileDisplaySize = window.innerWidth < 400 ? 'compact' : 'normal';
+    const isMobile = window.innerWidth < 768; // Changed to 768px breakpoint for better mobile detection
+    const turnstileSize = isMobile ? 'compact' : 'normal';
 
     if (turnstileWidgetRef.current && window.turnstile) {
       try {
@@ -43,22 +44,18 @@ const LoginPage = () => {
     
     turnstileWidgetRef.current = window.turnstile.render('#turnstile-widget-container', {
       sitekey: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
-      size: turnstileDisplaySize,
+      size: turnstileSize,
       callback: function(token) {
-        // console.log("Turnstile token:", token);
         setTurnstileToken(token);
-        setError(''); // Clear CAPTCHA error if user completes it
+        setError('');
       },
       'expired-callback': function() {
-        console.log("Turnstile token expired");
         setTurnstileToken('');
-        // setError('CAPTCHA challenge expired. Please try again.'); // Optional: set error on expiry
-        if (turnstileWidgetRef.current && window.turnstile) { // Attempt to reset if expired
-            window.turnstile.reset(turnstileWidgetRef.current);
+        if (turnstileWidgetRef.current && window.turnstile) {
+          window.turnstile.reset(turnstileWidgetRef.current);
         }
       },
       'error-callback': function() {
-        console.error("Turnstile error callback triggered.");
         setError('CAPTCHA challenge failed. Please refresh and try again.');
         setTurnstileToken('');
       }
@@ -68,21 +65,18 @@ const LoginPage = () => {
   useEffect(() => {
     const loadAndRenderTurnstile = () => {
       if (typeof window.turnstile !== 'undefined') {
-        setTurnstileReady(true); // Mark as ready and trigger render via separate useEffect
+        setTurnstileReady(true);
         return;
       }
 
       if (document.querySelector('script[src^="https://challenges.cloudflare.com/turnstile"]')) {
-        // Script tag exists, set up callback if not already set or turnstile object not yet available
         if (typeof window.onloadTurnstileCallback !== 'function' && typeof window.turnstile === 'undefined') {
           window.onloadTurnstileCallback = () => {
             setTurnstileReady(true);
           };
         } else if (typeof window.turnstile !== 'undefined') {
-          // Script tag exists and turnstile object is available
           setTurnstileReady(true);
         }
-        // If callback is already set, it will handle setting turnstileReady
         return;
       }
       
@@ -97,8 +91,8 @@ const LoginPage = () => {
       document.head.appendChild(script);
     };
 
-    if (typeof window !== 'undefined') { // Ensure window object is available
-        loadAndRenderTurnstile();
+    if (typeof window !== 'undefined') {
+      loadAndRenderTurnstile();
     }
 
     return () => {
@@ -109,20 +103,17 @@ const LoginPage = () => {
           console.warn("Turnstile cleanup error on unmount:", e);
         }
       }
-      // Only delete the callback if this instance might have been the one that set it
-      // and no other component relies on it. More complex scenarios might need better global state management for this.
       if (typeof window !== 'undefined' && window.onloadTurnstileCallback) {
-        // A simple check; might need refinement if multiple Turnstile instances use this global cb
         delete window.onloadTurnstileCallback;
       }
     };
-  }, []); // Run once on mount
+  }, []);
 
   useEffect(() => {
     if (turnstileReady) {
       renderTurnstile();
     }
-  }, [turnstileReady]); // Re-render when Turnstile script is ready
+  }, [turnstileReady]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -130,7 +121,6 @@ const LoginPage = () => {
     
     if (!turnstileToken) {
       setError('Please complete the CAPTCHA challenge.');
-      // Optionally reset Turnstile if it wasn't completed
       if (turnstileWidgetRef.current && window.turnstile) {
         window.turnstile.reset(turnstileWidgetRef.current);
       }
@@ -139,7 +129,6 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      // 1. Verify Turnstile token with your backend
       const captchaResponse = await fetch('/api/verify-turnstile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -155,14 +144,9 @@ const LoginPage = () => {
         return;
       }
 
-      // 2. If CAPTCHA is valid, proceed with Firebase login
       await signInWithEmailAndPassword(auth, email, password);
-      // Redirect is handled by the first useEffect monitoring 'user' state
-      // router.push('/select-role'); // This line might be redundant
     } catch (firebaseError) {
-      console.error("Firebase login error:", firebaseError);
       setError(firebaseError.message || 'Failed to login. Please check your credentials.');
-      // Reset Turnstile on login failure as well
       if (turnstileWidgetRef.current && window.turnstile) window.turnstile.reset(turnstileWidgetRef.current);
       setTurnstileToken('');
     } finally {
@@ -171,83 +155,107 @@ const LoginPage = () => {
   };
 
   if (authLoading || (!authLoading && user)) {
-    // Show loading indicator while checking auth state or if user is already logged in (will be redirected)
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
   }
 
   return (
     <>
-      {/* 
-        Head tag for script loading is not ideal in App Router components here,
-        as we are loading script dynamically in useEffect. 
-        If you were to use the Head component for the script, 
-        it would look like:
-        <Head>
-          <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onloadTurnstileCallback" async defer></script>
-        </Head>
-        But we've opted for dynamic loading via useEffect for more control.
-      */}
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-lg">
-          <div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-md w-full space-y-8 bg-white p-10 rounded-2xl shadow-xl">
+          <div className="text-center">
             <img 
-                className="mx-auto h-20 w-auto" // Increased logo size
-                src="/images/sathimart_logo.png" 
-                alt="Sathimart Department Store" 
+              className="mx-auto h-24 w-auto" 
+              src="/images/sathimart_logo.png" 
+              alt="Sathimart Department Store" 
             />
-            <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-              Sign in to your account
+            <h2 className="mt-6 text-center text-3xl font-bold text-gray-900">
+              Welcome Back
             </h2>
+            <p className="mt-2 text-sm text-gray-600">
+              Sign in to your account to continue
+            </p>
           </div>
+          
           <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-            <input type="hidden" name="remember" defaultValue="true" />
-            <div className="rounded-md shadow-sm -space-y-px">
+            <div className="space-y-4">
               <div>
-                <label htmlFor="email-address" className="sr-only">Email address</label>
+                <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email address
+                </label>
                 <input
                   id="email-address"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Email address"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                  placeholder="your@email.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+              
               <div>
-                <label htmlFor="password" className="sr-only">Password</label>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   autoComplete="current-password"
                   required
-                  className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-                  placeholder="Password"
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
             </div>
 
-            {/* Turnstile Widget Container */}
-            <div id="turnstile-widget-container" className="my-4 flex justify-center">
-              {/* Turnstile widget will be rendered here */}
-              {/* Fallback loading state for Turnstile itself if needed, but usually it's quick */}
-              {!turnstileReady && <div className="text-sm text-gray-500">Loading CAPTCHA...</div>}
+            {/* Turnstile Widget Container with responsive styling */}
+            <div 
+              id="turnstile-widget-container" 
+              className="my-6 flex justify-center"
+              style={{
+                minHeight: '65px', // Ensures consistent height for both compact and normal modes
+                width: '100%'
+              }}
+            >
+              {!turnstileReady && (
+                <div className="flex items-center justify-center w-full h-full bg-gray-100 rounded-lg">
+                  <span className="text-sm text-gray-500">Loading security check...</span>
+                </div>
+              )}
             </div>
 
-            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && (
+              <div className="rounded-md bg-red-50 p-4">
+                <p className="text-sm text-red-600 text-center">{error}</p>
+              </div>
+            )}
 
             <div>
               <button
                 type="submit"
-                disabled={loading || !turnstileToken} // Disable if login in progress or CAPTCHA not completed
-                className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-300 disabled:cursor-not-allowed"
+                disabled={loading || !turnstileToken}
+                className={`w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-200 ${
+                  loading || !turnstileToken ? 'opacity-70 cursor-not-allowed' : ''
+                }`}
               >
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Signing in...
+                  </>
+                ) : 'Sign in'}
               </button>
             </div>
           </form>
