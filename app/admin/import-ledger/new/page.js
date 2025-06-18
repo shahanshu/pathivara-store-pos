@@ -383,8 +383,8 @@ const NewImportLedgerPage = () => {
                     <div>
                       <p className="font-medium text-gray-800">{index+1}. {item.productName} ({item.barcode})</p>
                       <p className="text-gray-500">
-                        Qty: {item.quantityImported} @ ${parseFloat(item.ratePerItem || 0).toFixed(2)} each. 
-                        {item.isNewProduct ? ` (New Product - Selling @ $${parseFloat(item.newProductDetails.price || 0).toFixed(2)})` : ''}
+                        Qty: {item.quantityImported} @ Rs. {parseFloat(item.ratePerItem || 0).toFixed(2)} each. 
+                        {item.isNewProduct ? ` (New Product - Selling @ Rs. ${parseFloat(item.newProductDetails.price || 0).toFixed(2)})` : ''}
                       </p>
                     </div>
                     <button type="button" onClick={() => handleRemoveItem(item.id)}
@@ -396,7 +396,7 @@ const NewImportLedgerPage = () => {
               </ul>
             </div>
              <p className="mt-4 text-right font-semibold text-gray-800">
-                Total Estimated Cost: ${items.reduce((sum, item) => sum + (parseFloat(item.quantityImported || 0) * parseFloat(item.ratePerItem || 0)), 0).toFixed(2)}
+                Total Estimated Cost: Rs. {items.reduce((sum, item) => sum + (parseFloat(item.quantityImported || 0) * parseFloat(item.ratePerItem || 0)), 0).toFixed(2)}
             </p>
           </div>
         )}

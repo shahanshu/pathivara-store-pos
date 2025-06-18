@@ -4,7 +4,10 @@
 import { FiEdit3, FiEye } from 'react-icons/fi'; // FiEdit3 for edit/return
 
 const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+  return "Rs. " + new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', currencyDisplay: 'code' })
+    .format(amount || 0)
+    .replace("USD", "")
+    .trim();
 };
 
 const formatDate = (dateString) => {

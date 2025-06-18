@@ -117,7 +117,7 @@ const AdminImportLedgerPage = () => {
                     {entry.itemCount}
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm text-right">
-                    ${entry.grandTotalCost ? entry.grandTotalCost.toFixed(2) : '0.00'}
+                    Rs. {entry.grandTotalCost ? entry.grandTotalCost.toFixed(2) : '0.00'}
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm text-center whitespace-nowrap">
                     <Link

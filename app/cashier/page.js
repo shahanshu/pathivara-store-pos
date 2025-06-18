@@ -17,7 +17,10 @@ import RecentTransactions from '@/app/components/cashier/RecentTransactions';
 import ReturnEditModal from '@/app/components/cashier/ReturnEditModal';
 
 const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+  return "Rs. " + new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', currencyDisplay: 'code' })
+    .format(amount || 0)
+    .replace("USD", "")
+    .trim();
 };
 
 export default function CashierPage() {

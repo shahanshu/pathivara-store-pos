@@ -6,7 +6,10 @@ import LoadingSpinner from '@/app/components/common/LoadingSpinner';
 import { FiX, FiSave, FiAlertTriangle, FiMinusCircle, FiPlusCircle } from 'react-icons/fi';
 
 const formatCurrency = (amount) => {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+  return "Rs. " + new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', currencyDisplay: 'code' })
+    .format(amount || 0)
+    .replace("USD", "")
+    .trim();
 };
 
 export default function ReturnEditModal({ transaction, isOpen, onClose, onTransactionModified, user }) {

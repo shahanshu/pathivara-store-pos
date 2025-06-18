@@ -127,7 +127,7 @@ const AdminProductsPage = () => {
                     <p className="text-gray-900 whitespace-no-wrap">{product.barcode}</p>
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm">
-                    <p className="text-gray-900 whitespace-no-wrap">${product.price.toFixed(2)}</p>
+                    <p className="text-gray-900 whitespace-no-wrap">Rs. {product.price.toFixed(2)}</p>
                   </td>
                   <td className="px-5 py-4 border-b border-gray-200 text-sm">
                     <p className="text-gray-900 whitespace-no-wrap">{product.currentStock}</p>

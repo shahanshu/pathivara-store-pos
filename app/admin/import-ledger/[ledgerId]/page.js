@@ -109,7 +109,7 @@ const ImportLedgerDetailPage = () => {
           </div>
           <div className="flex items-center">
             <FiDollarSign className="text-indigo-500 mr-2" /> 
-            <strong>Total Cost:</strong> <span className="ml-1">${entry.grandTotalCost.toFixed(2)}</span>
+            <strong>Total Cost:</strong> <span className="ml-1">Rs. {entry.grandTotalCost.toFixed(2)}</span>
           </div>
           <div className="flex items-center col-span-1 md:col-span-2">
             <FiCalendar className="text-gray-500 mr-2" /> 
@@ -143,8 +143,8 @@ const ImportLedgerDetailPage = () => {
                     </td>
                     <td className="px-3 py-2 border-b border-gray-200">{item.productDetails?.barcode || item.barcode || 'N/A'}</td>
                     <td className="px-3 py-2 border-b border-gray-200 text-right">{item.quantityImported}</td>
-                    <td className="px-3 py-2 border-b border-gray-200 text-right">${parseFloat(item.ratePerItem || 0).toFixed(2)}</td>
-                    <td className="px-3 py-2 border-b border-gray-200 text-right">${parseFloat(item.totalCostForItem || 0).toFixed(2)}</td>
+                    <td className="px-3 py-2 border-b border-gray-200 text-right">Rs. {parseFloat(item.ratePerItem || 0).toFixed(2)}</td>
+                    <td className="px-3 py-2 border-b border-gray-200 text-right">Rs. {parseFloat(item.totalCostForItem || 0).toFixed(2)}</td>
                   </tr>
                 ))}
               </tbody>

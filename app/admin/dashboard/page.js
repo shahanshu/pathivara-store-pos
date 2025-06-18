@@ -12,7 +12,7 @@ const AdminDashboardPage = () => {
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h2 className="text-xl font-semibold text-gray-700 mb-2">Quick Stats (Placeholder)</h2>
-          <p className="text-gray-600">Total Sales: $0.00</p>
+          <p className="text-gray-600">Total Sales: Rs.0.00</p>
           <p className="text-gray-600">New Orders: 0</p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-md">
