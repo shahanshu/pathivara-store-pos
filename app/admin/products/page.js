@@ -1,4 +1,4 @@
-// ----- File: app/admin/products/page.js -----
+// File: app/admin/products/page.js
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
@@ -95,6 +95,14 @@ const AdminProductsPage = () => {
     );
   }, [products, searchTerm]);
 
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'NPR', // Or your local currency
+      minimumFractionDigits: 2,
+    }).format(amount || 0);
+  };
+  
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
@@ -165,8 +173,8 @@ const AdminProductsPage = () => {
                   product.currentStock === 0
                     ? 'text-red-600 font-semibold' // Out of stock is red
                     : product.currentStock <= (product.lowStockThreshold ?? 10)
-                      ? 'text-yellow-600 font-semibold' // Low stock is yellow
-                      : 'text-gray-900'; // Normal stock
+                    ? 'text-yellow-600 font-semibold' // Low stock is yellow
+                    : 'text-gray-900'; // Normal stock
 
                 return (
                   <tr key={product._id} className="hover:bg-gray-50">
@@ -177,7 +185,7 @@ const AdminProductsPage = () => {
                       <p className="text-gray-900 whitespace-no-wrap">{product.barcode}</p>
                     </td>
                     <td className="px-5 py-4 border-b border-gray-200 text-sm">
-                      <p className="text-gray-900 whitespace-no-wrap">Rs. {product.price.toFixed(2)}</p>
+                      <p className="text-gray-900 whitespace-no-wrap">{formatCurrency(product.price)}</p>
                     </td>
                     <td className="px-5 py-4 border-b border-gray-200 text-sm">
                       <p className={`whitespace-no-wrap ${stockClass}`}>

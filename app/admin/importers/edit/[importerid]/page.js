@@ -6,15 +6,16 @@ import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
 import { useParams, useRouter } from 'next/navigation';
+import { FiArrowLeft } from 'react-icons/fi';
+
 
 const EditImporterPage = () => {
     const params = useParams();
-    // CRITICAL FIX: The dynamic segment is [importerid] (lowercase 'i', singular 'd').
-    // params object will have a key 'importerid'.
-    // We assign its value to a variable named 'importerId' (camelCase) for use in the component.
-    const importerId = params.importerid;
+    const router = useRouter();
 
-    const router = useRouter(); // Kept for potential redirects, e.g., if importerId is truly invalid.
+    // CRITICAL FIX: The dynamic segment is [importerid] (lowercase).
+    // params object will have a key 'importerid'.
+    const importerId = params.importerid;
 
     const [name, setName] = useState("");
     const [panNumber, setPanNumber] = useState("");
@@ -27,16 +28,12 @@ const EditImporterPage = () => {
     const { user } = useAuth();
 
     const fetchImporterData = useCallback(async () => {
-        if (!importerId) { // Check if importerId was successfully retrieved from params
+        if (!importerId) {
             setError("Importer ID is missing or invalid in URL.");
             setIsLoadingData(false);
-            // Optionally, redirect if importerId is fundamentally missing
-            // router.push('/admin/importers'); 
             return;
         }
         if (!user) {
-            // This case should ideally be handled by AdminLayout redirecting to login.
-            // If it reaches here, it means AdminLayout might not have run or user session expired.
             setError("User not authenticated. Please login.");
             setIsLoadingData(false);
             return;
@@ -44,21 +41,16 @@ const EditImporterPage = () => {
 
         setIsLoadingData(true);
         setError("");
-        setSuccessMessage(""); // Clear previous success messages
+        setSuccessMessage("");
         try {
             const token = await user.getIdToken();
-            // The API route is /api/admin/importers/[importersId]
-            // The importerId from the URL is correctly passed here.
-            // Next.js will map this to context.params.importersId on the backend.
             const response = await fetch(`/api/admin/importers/${importerId}`, {
                 headers: { 'Authorization': `Bearer ${token}` },
             });
-
             const data = await response.json();
             if (!response.ok || !data.success) {
                 throw new Error(data.message || 'Failed to fetch importer data');
             }
-
             const importer = data.importer;
             if (importer) {
                 setName(importer.name);
@@ -73,11 +65,11 @@ const EditImporterPage = () => {
         } finally {
             setIsLoadingData(false);
         }
-    }, [importerId, user]); // importerId and user are dependencies
+    }, [importerId, user]);
 
     useEffect(() => {
         fetchImporterData();
-    }, [fetchImporterData]); // fetchImporterData is memoized with useCallback
+    }, [fetchImporterData]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -93,7 +85,6 @@ const EditImporterPage = () => {
         setIsSubmitting(true);
         setError("");
         setSuccessMessage("");
-
         try {
             const token = await user.getIdToken();
             const response = await fetch(`/api/admin/importers/${importerId}`, {
@@ -104,20 +95,17 @@ const EditImporterPage = () => {
                 },
                 body: JSON.stringify({ name, panNumber, contactInfo }),
             });
-
             const data = await response.json();
             if (!response.ok || !data.success) {
                 throw new Error(data.message || `Failed to update importer: ${response.status}`);
             }
-
             setSuccessMessage(data.message || `Importer "${data.importer?.name || name}" updated successfully!`);
-            // Optionally, re-update state from response if backend modifies data (e.g., timestamps or validated fields)
             if (data.importer) {
                 setName(data.importer.name);
                 setPanNumber(data.importer.panNumber);
                 setContactInfo(data.importer.contactInfo || "");
             }
-            setTimeout(() => setSuccessMessage(""), 5000); // Clear success message after 5s
+            setTimeout(() => setSuccessMessage(""), 5000);
         } catch (err) {
             console.error(err);
             setError(err.message);
@@ -128,20 +116,19 @@ const EditImporterPage = () => {
 
     if (isLoadingData) {
         return (
-            <div className="flex flex-col justify-center items-center min-h-[calc(100vh-theme(space.16)-theme(space.16))]"> {/* Adjust height based on your layout */}
+            <div className="flex flex-col justify-center items-center min-h-[calc(100vh-theme(space.16)-theme(space.16))]">
                 <LoadingSpinner size="lg" />
                 <p className="mt-4 text-gray-600">Loading importer data...</p>
             </div>
         );
     }
 
-    // If there was an error fetching initial data and critical data (like name) isn't loaded
     if (error && !name) {
         return (
             <div className="text-center p-8">
                 <p className="mb-4 text-red-500 bg-red-100 p-3 rounded-md">{error}</p>
-                <Link href="/admin/importers" className="text-indigo-600 hover:text-indigo-800">
-                    ← Back to Importers
+                <Link href="/admin/importers" className="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
+                    <FiArrowLeft className="mr-2" /> Back to Importers
                 </Link>
             </div>
         );
@@ -151,12 +138,11 @@ const EditImporterPage = () => {
         <div>
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-3xl font-bold text-gray-800">Edit Importer</h1>
-                <Link href="/admin/importers" className="text-indigo-600 hover:text-indigo-800">
-                    ← Back to Importers
+                <Link href="/admin/importers" className="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
+                    <FiArrowLeft className="mr-2" /> Back to Importers
                 </Link>
             </div>
 
-            {/* General error for the form (e.g. submit error when name is loaded) */}
             {error && name && <p className="mb-4 text-red-600 bg-red-100 p-3 rounded-md">{error}</p>}
             {successMessage && <p className="mb-4 text-green-600 bg-green-100 p-3 rounded-md">{successMessage}</p>}
 
@@ -174,7 +160,6 @@ const EditImporterPage = () => {
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     />
                 </div>
-
                 <div>
                     <label htmlFor="panNumber" className="block text-sm font-medium text-gray-700">
                         PAN Number <span className="text-red-500">*</span>
@@ -188,7 +173,6 @@ const EditImporterPage = () => {
                         className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                     />
                 </div>
-
                 <div>
                     <label htmlFor="contactInfo" className="block text-sm font-medium text-gray-700">
                         Contact Information (Optional)
@@ -202,11 +186,10 @@ const EditImporterPage = () => {
                         placeholder="Address, phone, email etc."
                     />
                 </div>
-
                 <div>
                     <button
                         type="submit"
-                        disabled={isSubmitting || isLoadingData} // Prevent submission if initial data is still loading or already submitting
+                        disabled={isSubmitting || isLoadingData}
                         className="w-full flex justify-center items-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400 disabled:cursor-not-allowed"
                     >
                         {isSubmitting ? (
