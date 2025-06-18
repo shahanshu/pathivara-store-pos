@@ -2,7 +2,7 @@
 'use client';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion'; // Import AnimatePresence
-import { FiShoppingCart, FiMenu, FiX } from 'react-icons/fi';
+import { FiShoppingCart, FiMenu, FiX, FiLogIn } from 'react-icons/fi'; // Added FiLogIn
 import { useState, useEffect } from 'react';
 
 const Navbar = () => {
@@ -23,6 +23,7 @@ const Navbar = () => {
     { name: 'Shop', href: '/#shop-our-picks' },
     { name: 'Categories', href: '/#shop-by-category' },
     { name: 'About Us', href: '/#about-us' },
+    // { name: 'Login', href: '/login' }, // We will add Login separately for distinct styling if needed, or keep it here
   ];
 
   const navClasses = `fixed w-full top-0 left-0 z-50 transition-all duration-300 ease-in-out ${
@@ -85,9 +86,9 @@ const Navbar = () => {
             {/* Logo */}
             <Link href="/" className="flex items-center" onClick={closeMenu}>
               <img
-                src="/images/sathimart_logo.png"
+                src="/images/sathimart_logo.png" // Ensure your logo path is correct
                 alt="Sathi Mart Logo"
-                className="h-12 w-auto"
+                className="h-12 w-auto" // Adjust size as needed
               />
             </Link>
 
@@ -109,8 +110,27 @@ const Navbar = () => {
                   </Link>
                 </motion.div>
               ))}
+              {/* Login Link - Desktop */}
               <motion.div
-                custom={menuItems.length}
+                custom={menuItems.length} // Continue delay sequence
+                variants={navItemVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                <Link
+                  href="/login"
+                  className={`font-medium px-4 py-2 rounded-md text-sm transition-colors flex items-center
+                              ${scrolled || isOpen 
+                                ? 'bg-primary text-white hover:bg-primary-dark' 
+                                : 'bg-white/20 hover:bg-white/30 text-white'}`}
+                >
+                  <FiLogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Link>
+              </motion.div>
+              {/* Cart Icon */}
+              <motion.div
+                custom={menuItems.length + 1} // Adjust delay sequence
                 variants={navItemVariants}
                 initial="hidden"
                 animate="visible"
@@ -122,15 +142,19 @@ const Navbar = () => {
             </div>
 
             {/* Mobile Menu Button */}
-            <div className="md:hidden">
-              <button
-                onClick={() => setIsOpen(!isOpen)}
-                className={`focus:outline-none p-2 transition-colors ${mobileIconColorClass}`}
-                aria-label="Toggle menu"
-                aria-expanded={isOpen}
-              >
-                {isOpen ? <FiX size={28} /> : <FiMenu size={28} />}
-              </button>
+            <div className="md:hidden flex items-center">
+                {/* Cart Icon for Mobile (optional, can be inside menu too) */}
+                <Link href="/cart" className={`p-2 rounded-full transition-colors mr-2 ${mobileIconColorClass}`} onClick={closeMenu}>
+                  <FiShoppingCart size={24} />
+                </Link>
+                <button
+                    onClick={() => setIsOpen(!isOpen)}
+                    className={`focus:outline-none p-2 transition-colors ${mobileIconColorClass}`}
+                    aria-label="Toggle menu"
+                    aria-expanded={isOpen}
+                >
+                    {isOpen ? <FiX size={28} /> : <FiMenu size={28} />}
+                </button>
             </div>
           </div>
         </div>
@@ -172,15 +196,23 @@ const Navbar = () => {
                   {item.name}
                 </Link>
               ))}
+              {/* Login Link - Mobile */}
               <Link
-                href="/cart"
-                className="text-gray-700 hover:text-primary block px-3 py-2 rounded-md text-base font-medium transition-colors"
+                href="/login"
+                className="text-gray-700 hover:text-primary block px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center"
                 onClick={closeMenu}
               >
-                <div className="flex items-center">
-                  <FiShoppingCart size={20} className="mr-2" /> Cart
-                </div>
+                <FiLogIn className="mr-2 h-5 w-5" />
+                Login
               </Link>
+              {/* Cart link can also be explicitly here if not outside the button */}
+              {/* <Link
+                href="/cart"
+                className="text-gray-700 hover:text-primary block px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center"
+                onClick={closeMenu}
+              >
+                <FiShoppingCart size={20} className="mr-2" /> Cart
+              </Link> */}
             </motion.div>
           </>
         )}
