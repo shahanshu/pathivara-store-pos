@@ -2,15 +2,17 @@
 
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
-import { withAdminAuth } from '@/utils/apiAuth';
+import { withAdminAuth } from '@/utils/apiAuth'; // Using your existing admin auth HOC
 
 export const GET = withAdminAuth(async function GET(request, { user }) {
   try {
     const { db } = await connectToDatabase();
     const { searchParams } = new URL(request.url);
+
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
 
+    // --- Build Match Query for the overall summary ---
     let matchQuery = {};
     if (startDateParam && endDateParam) {
       const start = new Date(startDateParam);
@@ -18,44 +20,34 @@ export const GET = withAdminAuth(async function GET(request, { user }) {
       const end = new Date(endDateParam);
       end.setHours(23, 59, 59, 999); // End of the day
       matchQuery.transactionDate = { $gte: start, $lte: end };
-    } else if (startDateParam) {
-      const start = new Date(startDateParam);
-      start.setHours(0, 0, 0, 0);
-      matchQuery.transactionDate = { $gte: start };
-    } else if (endDateParam) {
-      const end = new Date(endDateParam);
-      end.setHours(23, 59, 59, 999);
-      matchQuery.transactionDate = { $lte: end };
     }
 
-    // Default to last 30 days if no dates are provided for daily summary
-    // For overall summary, it will be all time if no dates
+    // --- Build Match Query for the daily breakdown (default to last 30 days) ---
     let dailySummaryStartDate = new Date();
+    dailySummaryStartDate.setDate(dailySummaryStartDate.getDate() - 29);
+    dailySummaryStartDate.setHours(0, 0, 0, 0);
+
+    let dailySummaryEndDate = new Date();
+    dailySummaryEndDate.setHours(23, 59, 59, 999);
+
     if (startDateParam) {
         dailySummaryStartDate = new Date(startDateParam);
         dailySummaryStartDate.setHours(0,0,0,0);
-    } else {
-       dailySummaryStartDate.setDate(dailySummaryStartDate.getDate() - 29); // Last 30 days including today
-       dailySummaryStartDate.setHours(0,0,0,0);
     }
-   
-    let dailySummaryEndDate = new Date();
     if (endDateParam) {
         dailySummaryEndDate = new Date(endDateParam);
         dailySummaryEndDate.setHours(23,59,59,999);
-    } else {
-        dailySummaryEndDate.setHours(23,59,59,999); // End of today
     }
-
-
-    const dailyMatchQuery = {
-        transactionDate: {
-            $gte: dailySummaryStartDate,
-            $lte: dailySummaryEndDate
-        }
-    };
     
-    // Aggregation for overall summary
+    const dailyMatchQuery = {
+      transactionDate: {
+        $gte: dailySummaryStartDate,
+        $lte: dailySummaryEndDate
+      }
+    };
+
+
+    // --- Aggregation Pipeline for Overall Summary ---
     const summaryPipeline = [
       { $match: matchQuery },
       {
@@ -63,8 +55,7 @@ export const GET = withAdminAuth(async function GET(request, { user }) {
           _id: null,
           totalRevenue: { $sum: '$grandTotal' },
           totalTransactions: { $sum: 1 },
-          // Add more summary fields if needed, e.g., total items sold
-          totalItemsSold: { $sum: { $sum: '$items.quantitySold' } } 
+          totalItemsSold: { $sum: { $sum: '$items.quantitySold' } }
         },
       },
       {
@@ -84,24 +75,24 @@ export const GET = withAdminAuth(async function GET(request, { user }) {
       },
     ];
 
-    // Aggregation for daily sales summary (for charts)
+    // --- Aggregation Pipeline for Daily Sales Chart ---
     const dailySalesPipeline = [
-      { $match: dailyMatchQuery }, // Use the specific date range for daily breakdown
+      { $match: dailyMatchQuery },
       {
         $group: {
           _id: {
             $dateToString: { format: '%Y-%m-%d', date: '$transactionDate' },
           },
-          dailyRevenue: { $sum: '$grandTotal' },
-          dailyTransactions: { $sum: 1 },
+          totalRevenue: { $sum: '$grandTotal' },
+          transactionCount: { $sum: 1 },
         },
       },
       {
         $project: {
           _id: 0,
           date: '$_id',
-          totalRevenue: '$dailyRevenue',
-          transactionCount: '$dailyTransactions'
+          totalRevenue: '$totalRevenue',
+          transactionCount: '$transactionCount'
         }
       },
       { $sort: { date: 1 } }, // Sort by date ascending
@@ -116,11 +107,11 @@ export const GET = withAdminAuth(async function GET(request, { user }) {
       averageOrderValue: 0,
       totalItemsSold: 0,
     };
-    
+
     return NextResponse.json({ 
-        success: true, 
-        summary, 
-        dailySales: dailySalesResult 
+      success: true, 
+      summary, 
+      dailySales: dailySalesResult 
     }, { status: 200 });
 
   } catch (error) {

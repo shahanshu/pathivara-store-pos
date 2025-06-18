@@ -12,7 +12,7 @@ export const GET = withAdminAuth(async function GET(request, { user }) {
     const startDateParam = searchParams.get('startDate');
     const endDateParam = searchParams.get('endDate');
     const pageParam = parseInt(searchParams.get('page') || '1', 10);
-    const limitParam = parseInt(searchParams.get('limit') || '10', 10); // Default to 10 items per page
+    const limitParam = parseInt(searchParams.get('limit') || '10', 10);
 
     let query = {};
     if (startDateParam && endDateParam) {
@@ -21,16 +21,7 @@ export const GET = withAdminAuth(async function GET(request, { user }) {
       const end = new Date(endDateParam);
       end.setHours(23, 59, 59, 999);
       query.transactionDate = { $gte: start, $lte: end };
-    } else if (startDateParam) {
-      const start = new Date(startDateParam);
-      start.setHours(0, 0, 0, 0);
-      query.transactionDate = { $gte: start };
-    } else if (endDateParam) {
-        const end = new Date(endDateParam);
-        end.setHours(23, 59, 59, 999);
-        query.transactionDate = { $lte: end };
     }
-
 
     const skip = (pageParam - 1) * limitParam;
 
