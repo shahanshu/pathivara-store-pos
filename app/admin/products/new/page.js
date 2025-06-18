@@ -1,3 +1,4 @@
+// ----- File: app/admin/products/new/page.js -----
 'use client';
 
 import { useState } from 'react';
@@ -5,6 +6,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
+import { FiArrowLeft } from 'react-icons/fi'; // Add this import
 
 const NewProductPage = () => {
   const [name, setName] = useState("");
@@ -46,7 +48,7 @@ const NewProductPage = () => {
       setIsSubmitting(false);
       return;
     }
-     if (isNaN(parseInt(lowStockThreshold)) || parseInt(lowStockThreshold) < 0) {
+    if (isNaN(parseInt(lowStockThreshold)) || parseInt(lowStockThreshold) < 0) {
       setError('Low stock threshold must be a non-negative number.');
       setIsSubmitting(false);
       return;
@@ -85,11 +87,8 @@ const NewProductPage = () => {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">Add New Product</h1>
-        <Link 
-          href="/admin/products" 
-          className="text-indigo-600 hover:text-indigo-800"
-        >
-          ← Back to Products
+        <Link href="/admin/products" className="text-indigo-600 hover:text-indigo-800 inline-flex items-center">
+          <FiArrowLeft className="mr-1" /> Back to Products
         </Link>
       </div>
 
@@ -99,31 +98,36 @@ const NewProductPage = () => {
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700">Product Name <span className="text-red-500">*</span></label>
-          <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+          <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
         </div>
         <div>
           <label htmlFor="barcode" className="block text-sm font-medium text-gray-700">Barcode <span className="text-red-500">*</span></label>
-          <input type="text" id="barcode" value={barcode} onChange={(e) => setBarcode(e.target.value)} required className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+          <input type="text" id="barcode" value={barcode} onChange={(e) => setBarcode(e.target.value)} required
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
         </div>
         <div>
           <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price <span className="text-red-500">*</span></label>
-          <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} required step="0.01" min="0.01" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
+          <input type="number" id="price" value={price} onChange={(e) => setPrice(e.target.value)} required
+            step="0.01" min="0.01" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
         </div>
         <div>
           <label htmlFor="currentStock" className="block text-sm font-medium text-gray-700">Current Stock</label>
           <input type="number" id="currentStock" value={currentStock} onChange={(e) => setCurrentStock(e.target.value)} min="0" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"/>
         </div>
-         <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
-            <input type="text" id="category" value={category} onChange={(e) => setCategory(e.target.value)} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+        <div>
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category</label>
+          <input type="text" id="category" value={category} onChange={(e) => setCategory(e.target.value)}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
-            <label htmlFor="lowStockThreshold" className="block text-sm font-medium text-gray-700">Low Stock Threshold</label>
-            <input type="number" id="lowStockThreshold" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} min="0" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
+          <label htmlFor="lowStockThreshold" className="block text-sm font-medium text-gray-700">Low Stock Threshold</label>
+          <input type="number" id="lowStockThreshold" value={lowStockThreshold} onChange={(e) => setLowStockThreshold(e.target.value)} min="0" className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
         </div>
         <div>
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
-          <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+          <textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} rows={4}
+            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
         </div>
         <div>
           <button 
@@ -147,3 +151,4 @@ const NewProductPage = () => {
 };
 
 export default NewProductPage;
+// ----- End of File: app/admin/products/new/page.js -----
