@@ -102,14 +102,13 @@ const AdminProductsPage = () => {
    minimumFractionDigits: 2,
   }).format(amount || 0);
  };
-
  return (
   <div>
-   <div className="flex justify-between items-center mb-6">
-    <h1 className="text-3xl font-bold text-gray-800">Product Management</h1>
+   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+    <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Product Management</h1>
     <Link
      href="/admin/products/new"
-     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded inline-flex items-center"
+     className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded inline-flex items-center text-sm sm:text-base"
     >
      <FiPlusCircle className="mr-2" /> Add New Product
     </Link>
@@ -122,10 +121,10 @@ const AdminProductsPage = () => {
      </div>
      <input
       type="text"
-      placeholder="Search by name or barcode..." // MODIFIED: Removed category from placeholder
+      placeholder="Search by name or barcode..."
       value={searchTerm}
       onChange={(e) => setSearchTerm(e.target.value)}
-      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-sm"
      />
     </div>
    </div>
@@ -142,24 +141,22 @@ const AdminProductsPage = () => {
     <p className="text-gray-600 text-center py-10">
      {searchTerm ? "No products match your search." : "No products found. Start by adding a new product."}
     </p>
-   )}
-
-   {!isLoadingList && !error && filteredProducts.length > 0 && (
-    <div className="bg-white shadow-md rounded-lg overflow-x-auto">
-     <table className="min-w-full leading-normal">
+   )}   {!isLoadingList && !error && filteredProducts.length > 0 && (
+    <div className="bg-white shadow-md rounded-lg overflow-hidden">
+     <div className="overflow-x-auto">
+      <table className="min-w-full leading-normal">
       <thead>
        <tr className="bg-gray-100">
-        <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
-        <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Barcode</th>
-        <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Price</th>
-        <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-         <FiInbox className="inline mr-1 mb-px" /> Current Stock
+        <th className="px-3 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+        <th className="hidden sm:table-cell px-3 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Barcode</th>
+        <th className="px-3 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Price</th>
+        <th className="px-3 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+         <FiInbox className="inline mr-1 mb-px" /> Stock
         </th>
-        <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-         <FiPackage className="inline mr-1 mb-px" /> Total Imported
+        <th className="hidden md:table-cell px-3 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+         <FiPackage className="inline mr-1 mb-px" /> Total
         </th>
-        {/* MODIFIED: Removed Category header */}
-        <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+        <th className="px-3 sm:px-5 py-2 sm:py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
        </tr>
       </thead>
       <tbody>
@@ -173,31 +170,30 @@ const AdminProductsPage = () => {
 
         return (
          <tr key={product._id} className="hover:bg-gray-50">
-          <td className="px-5 py-4 border-b border-gray-200 text-sm">
-           <p className="text-gray-900 whitespace-no-wrap">{product.name}</p>
+          <td className="px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-200 text-xs sm:text-sm">
+           <p className="text-gray-900 whitespace-nowrap">{product.name}</p>
           </td>
-          <td className="px-5 py-4 border-b border-gray-200 text-sm">
-           <p className="text-gray-900 whitespace-no-wrap">{product.barcode}</p>
+          <td className="hidden sm:table-cell px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-200 text-xs sm:text-sm">
+           <p className="text-gray-900 whitespace-nowrap">{product.barcode}</p>
           </td>
-          <td className="px-5 py-4 border-b border-gray-200 text-sm">
-           <p className="text-gray-900 whitespace-no-wrap">{formatCurrency(product.price)}</p>
+          <td className="px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-200 text-xs sm:text-sm">
+           <p className="text-gray-900 whitespace-nowrap">{formatCurrency(product.price)}</p>
           </td>
-          <td className="px-5 py-4 border-b border-gray-200 text-sm">
-           <p className={`whitespace-no-wrap ${stockClass}`}>
+          <td className="px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-200 text-xs sm:text-sm">
+           <p className={`whitespace-nowrap ${stockClass}`}>
             {product.currentStock}
            </p>
           </td>
-          <td className="px-5 py-4 border-b border-gray-200 text-sm">
-           <p className="text-gray-900 whitespace-no-wrap">{product.totalImportedEver || 0}</p>
+          <td className="hidden md:table-cell px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-200 text-xs sm:text-sm">
+           <p className="text-gray-900 whitespace-nowrap">{product.totalImportedEver || 0}</p>
           </td>
-          {/* MODIFIED: Removed category data cell */}
-          <td className="px-5 py-4 border-b border-gray-200 text-sm whitespace-nowrap">
+          <td className="px-3 sm:px-5 py-3 sm:py-4 border-b border-gray-200 text-xs sm:text-sm whitespace-nowrap">
            <Link
             href={`/admin/products/edit/${product._id}`}
             className={`text-indigo-600 hover:text-indigo-900 mr-3 inline-block ${isDeleting ? 'opacity-50 pointer-events-none' : ''}`}
             title="Edit Product"
            >
-            <FiEdit size={18} />
+            <FiEdit size={16} className="sm:text-lg" />
            </Link>
            <button
             onClick={() => handleDeleteProduct(product._id, product.name)}
@@ -205,14 +201,14 @@ const AdminProductsPage = () => {
             disabled={isDeleting === product._id}
             title="Delete Product"
            >
-            {isDeleting === product._id ? <LoadingSpinner size="sm" color="text-red-600" /> : <FiTrash2 size={18} />}
+            {isDeleting === product._id ? <LoadingSpinner size="sm" color="text-red-600" /> : <FiTrash2 size={16} className="sm:text-lg" />}
            </button>
           </td>
          </tr>
         );
-       })}
-      </tbody>
-     </table>
+       })}      </tbody>
+      </table>
+     </div>
     </div>
    )}
   </div>

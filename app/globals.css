@@ -1,10 +1,58 @@
 @import "tailwindcss";
 
-
-
-
 html, body {
   overflow-x: hidden;
   width: 100%; /* Ensures body calculates its width based on the viewport, not potentially oversized content */
   box-sizing: border-box; /* Tailwind preflight usually handles this, but explicit here is safe */
+}
+
+/* Improve table responsiveness in the admin area */
+@media (max-width: 640px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+    /* Better touch scrolling for tables on mobile */
+  .overflow-x-auto::-webkit-scrollbar {
+    height: 4px;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  .overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 2px;
+  }
+
+  /* Add hint for horizontal scrollable areas */
+  .overflow-x-auto {
+    position: relative;
+    scroll-behavior: smooth;
+  }
+
+  /* Optional: show scrolling indicator on table containers */
+  .overflow-x-auto::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.7) 100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .overflow-x-auto.has-more-content::after {
+    opacity: 1;
+  }
+}
+
+/* Prevent text zoom on input focus in iOS */
+@media screen and (max-width: 640px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
 }
