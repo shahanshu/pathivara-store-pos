@@ -170,52 +170,54 @@ export default function CashierPage() {
     return success;
   }, []);
 
-  const processBarcodeSubmission = useCallback(async (barcodeToProcess) => {
-    if (isLoadingProduct || isCheckingOut) return;
-    
-    setIsLoadingProduct(true);
-    setProductError('');
-    setScannedProduct(null); 
-    setPriceSearchError(''); 
-    setProductsFoundByPrice([]); 
+const processBarcodeSubmission = useCallback(async (barcodeToProcess) => {
+  if (isLoadingProduct || isCheckingOut) return;
+  
+  setIsLoadingProduct(true);
+  setProductError('');
+  setScannedProduct(null); 
+  setPriceSearchError(''); 
+  setProductsFoundByPrice([]); 
 
-    try {
-      const productRefPath = `productsInfo/${barcodeToProcess.trim()}`;
-      const productDatabaseRef = rtdbRef(rtdb, productRefPath);
-      const snapshot = await get(productDatabaseRef);
+  try {
+    const productRefPath = `productsInfo/${barcodeToProcess.trim()}`;
+    const productDatabaseRef = rtdbRef(rtdb, productRefPath);
+    const snapshot = await get(productDatabaseRef);
 
-      if (snapshot.exists()) {
-        const productData = snapshot.val();
-        const productToAdd = { 
-            _id: productData._id || null, 
-            barcode: barcodeToProcess.trim(), 
-            ...productData 
-        };
-        setScannedProduct(productToAdd);
-        
-        if (productData.currentStock > 0) {
-          if (addItemToCart(productToAdd, manualQuantity)) {
-            setBarcode(''); 
-            setManualQuantity(1);
-          }
-        } else {
-          setProductError(`"${productData.name}" is out of stock.`);
-          showToast(`"${productData.name}" is out of stock.`, 'error');
+    if (snapshot.exists()) {
+      const productData = snapshot.val();
+      const productToAdd = { 
+          _id: productData._id || null, 
+          barcode: barcodeToProcess.trim(), 
+          ...productData 
+      };
+      setScannedProduct(productToAdd);
+      
+      if (productData.currentStock > 0) {
+        if (addItemToCart(productToAdd, manualQuantity)) {
+          setBarcode(''); 
+          setManualQuantity(1);
         }
       } else {
-        setProductError(`Product with barcode "${barcodeToProcess.trim()}" not found.`);
-        showToast(`Product with barcode "${barcodeToProcess.trim()}" not found.`, 'error');
+        setProductError(`"${productData.name}" is out of stock.`);
+        showToast(`"${productData.name}" is out of stock.`, 'error');
+        setBarcode(''); // Clear barcode on out of stock
       }
-    } catch (error) {
-      console.error("Error fetching product from RTDB:", error);
-      setProductError('Error fetching product details. Please try again.');
-      showToast('Error fetching product details.', 'error');
-    } finally {
-      setIsLoadingProduct(false);
-      setFocusBarcodeTrigger(true);
+    } else {
+      setProductError(`Product with barcode "${barcodeToProcess.trim()}" not found.`);
+      showToast(`Product with barcode "${barcodeToProcess.trim()}" not found.`, 'error');
+      setBarcode(''); // Clear barcode when product not found
     }
-  }, [rtdb, manualQuantity, addItemToCart, isLoadingProduct, isCheckingOut]);
-
+  } catch (error) {
+    console.error("Error fetching product from RTDB:", error);
+    setProductError('Error fetching product details. Please try again.');
+    showToast('Error fetching product details.', 'error');
+    setBarcode(''); // Clear barcode on error
+  } finally {
+    setIsLoadingProduct(false);
+    setFocusBarcodeTrigger(true);
+  }
+}, [rtdb, manualQuantity, addItemToCart, isLoadingProduct, isCheckingOut]);
   useEffect(() => {
     clearTimeout(debounceTimerRef.current);
     if (barcode && barcode.trim() !== "" && !isCheckingOut && !isLoadingProduct && !isSearchingPrice) {
