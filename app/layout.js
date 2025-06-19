@@ -2,6 +2,7 @@ import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import "./globals.css";
 import { AuthProvider } from './contexts/AuthContext'; 
+
 export const metadata = {
   title: {
     default: "Sathimart Department",
@@ -12,19 +13,27 @@ export const metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://www.pathivarastore.co.np',
+    url: 'https://www.pathivarastore.com.np',
     siteName: 'Sathimart Department store',
     title: 'Sathimart Department store',
     description: 'Discover a wide range of products at Sathi Marth Department Store.',
-      
+    images: [
+      {
+        url: '/images/sathimart_logo.png', // or full URL if preferred
+        width: 800,
+        height: 600,
+        alt: 'Sathimart Department Store Logo',
+      },
+    ],
   },
   manifest:'/manifest.json'
 };
+
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable} scroll-smooth`}>
       <body className="font-sans bg-gray-50 text-gray-800 antialiased">
-        <AuthProvider> {/* Wrap with AuthProvider */}
+        <AuthProvider>
           {children}
         </AuthProvider>
       </body>

@@ -1,16 +1,26 @@
 import LandingPageClient from './components/landing/LandingPageClient';
 
 export async function generateMetadata() {
-  const siteBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.your-actual-domain.com';
+  const siteBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.pathivarastore.com.np';
 
   return {
-    title: 'Welcome to Our Store',
+    title: 'Sathimart',
     description: 'The best place to find amazing products online. Explore our curated collections for fashion, electronics, home goods, and more. Shop now for exclusive deals and fast shipping!',
     openGraph: {
-      title: 'Welcome to Our Store - My Awesome Department Store',
-      description: 'The best place to find amazing products online. Explore our curated collections for fashion, electronics, home goods, and more.',
+      title: 'Sathimart Department Store',
+      description: 'Developed By Anshu Inspired By Mokshadha',
       url: `${siteBaseUrl}/`,
+      images: [
+        {
+     
+          url: '/images/sathimart_logo.png', 
+          width: 1200,
+          height: 630,
+          alt: 'Sathimart Department Store Logo',
+        },
+      ],
     },
+
     alternates: {
       canonical: `${siteBaseUrl}/`,
     },
