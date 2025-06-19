@@ -1,4 +1,3 @@
-// app/components/landing/Navbar.jsx
 'use client';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion'; // Import AnimatePresence
@@ -23,7 +22,6 @@ const Navbar = () => {
     { name: 'Shop', href: '/#shop-our-picks' },
     { name: 'Categories', href: '/#shop-by-category' },
     { name: 'About Us', href: '/#about-us' },
-    // { name: 'Login', href: '/login' }, // We will add Login separately for distinct styling if needed, or keep it here
   ];
 
   const navClasses = `fixed w-full top-0 left-0 z-50 transition-all duration-300 ease-in-out ${
@@ -119,10 +117,7 @@ const Navbar = () => {
               >
                 <Link
                   href="/login"
-                  className={`font-medium px-4 py-2 rounded-md text-sm transition-colors flex items-center
-                              ${scrolled || isOpen 
-                                ? 'bg-primary text-white hover:bg-primary-dark' 
-                                : 'bg-white/20 hover:bg-white/30 text-white'}`}
+                  className={`font-medium px-3 py-2 rounded-md text-sm transition-colors flex items-center ${linkTextColorClass}`}
                 >
                   <FiLogIn className="mr-2 h-4 w-4" />
                   Login
@@ -181,11 +176,6 @@ const Navbar = () => {
               exit="exit"
               className="fixed top-0 right-0 h-full w-3/4 max-w-sm bg-white shadow-xl z-40 flex flex-col p-6 space-y-4 md:hidden"
             >
-              {/* Optional: Add a close button inside the panel if preferred */}
-              {/* <button onClick={closeMenu} className="self-end p-2 text-gray-600 hover:text-primary">
-                <FiX size={24} />
-              </button> */}
-              
               {menuItems.map((item) => (
                 <Link
                   key={item.name}
@@ -205,14 +195,6 @@ const Navbar = () => {
                 <FiLogIn className="mr-2 h-5 w-5" />
                 Login
               </Link>
-              {/* Cart link can also be explicitly here if not outside the button */}
-              {/* <Link
-                href="/cart"
-                className="text-gray-700 hover:text-primary block px-3 py-2 rounded-md text-base font-medium transition-colors flex items-center"
-                onClick={closeMenu}
-              >
-                <FiShoppingCart size={20} className="mr-2" /> Cart
-              </Link> */}
             </motion.div>
           </>
         )}

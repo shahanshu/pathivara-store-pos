@@ -1,50 +1,109 @@
 // ----- File: app/components/landing/ShopByCategorySection.jsx -----
-// app/components/landing/ShopByCategorySection.jsx
 'use client';
 import AnimatedSection from '../AnimatedSection';
-// import Link from 'next/link'; // Link component is no longer used directly for navigation here
-import { FiBox, FiSmartphone, FiHome, FiWatch } from 'react-icons/fi';
+import Link from 'next/link';
+import Image from 'next/image';
+import { FiShoppingBag, FiSmartphone, FiHome, FiHeart } from 'react-icons/fi'; // Changed FiWatch to FiHeart for Beauty & Health
+import { Inter } from 'next/font/google';
 
+const inter = Inter({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'], // Regular, Medium, SemiBold, Bold
+});
+
+// Updated imageSrc paths to match your provided filenames
 const categories = [
-  { name: 'Fashion & Apparel', href: '/shop/fashion', icon: <FiBox className="h-12 w-12 text-pink-500" />, color: 'bg-pink-100' },
-  { name: 'Electronics & Gadgets', href: '/shop/electronics', icon: <FiSmartphone className="h-12 w-12 text-blue-500" />, color: 'bg-blue-100' },
-  { name: 'Home & Living', href: '/shop/home', icon: <FiHome className="h-12 w-12 text-green-500" />, color: 'bg-green-100' },
-  { name: 'Accessories', href: '/shop/accessories', icon: <FiWatch className="h-12 w-12 text-yellow-500" />, color: 'bg-yellow-100' },
+  {
+    name: 'Fashion & Apparel',
+    href: '/shop/fashion',
+    icon: FiShoppingBag,
+    imageSrc: '/images/fashion.jpg', // Updated path
+    imageAlt: 'Stylish fashion apparel and accessories',
+    iconColor: 'text-pink-600',
+    iconBgColor: 'bg-pink-100',
+  },
+  {
+    name: 'Electronics & Gadgets',
+    href: '/shop/electronics',
+    icon: FiSmartphone,
+    imageSrc: '/images/electro.jpg', // Updated path
+    imageAlt: 'Various electronic gadgets and devices',
+    iconColor: 'text-blue-600',
+    iconBgColor: 'bg-blue-100',
+  },
+  {
+    name: 'Home & Living', // Kept this name, home-decor fits well
+    href: '/shop/home-living',
+    icon: FiHome,
+    imageSrc: '/images/home-decor.webp', // Updated path
+    imageAlt: 'Decorative items and essentials for home living',
+    iconColor: 'text-green-600',
+    iconBgColor: 'bg-green-100',
+  },
+  {
+    name: 'Beauty & Health',
+    href: '/shop/beauty-health',
+    icon: FiHeart, // Changed to FiHeart for a better fit
+    imageSrc: '/images/health.jpg', // Updated path
+    imageAlt: 'Products for beauty, wellness, and health',
+    iconColor: 'text-purple-600',
+    iconBgColor: 'bg-purple-100',
+  },
+  // Example of how to add more categories if needed:
+  // {
+  //   name: 'Books & Stationery',
+  //   href: '/shop/books',
+  //   icon: FiBookOpen,
+  //   imageSrc: '/images/books-category.jpg', // Placeholder - you would need books-category.jpg
+  //   imageAlt: 'A collection of books and stationery supplies',
+  //   iconColor: 'text-orange-600',
+  //   iconBgColor: 'bg-orange-100',
+  // },
 ];
 
 const ShopByCategorySection = () => {
   return (
     <AnimatedSection
       id="shop-by-category"
-      className="py-16 sm:py-24 bg-white"
+      className={`${inter.className} py-16 sm:py-20 lg:py-24 bg-neutral-50`}
       direction="up"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-neutral-900">
             Shop By Category
           </h2>
-          <p className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto">
-            Find exactly what you're looking for by browsing our top categories.
+          <p className="mt-4 text-lg text-neutral-700 max-w-2xl mx-auto">
+            Discover our curated collections. Find exactly what you're looking for by browsing our top categories.
           </p>
         </div>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 sm:gap-8">
           {categories.map((category) => (
-            // MODIFIED: Changed from Link to div to make it non-navigable
-            // while preserving styles and hover effects.
-            <div
+            <Link
+              href={category.href}
               key={category.name}
-              className={`group flex flex-col items-center justify-center p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 ${category.color} hover:brightness-95`}
-              // onClick={(e) => e.preventDefault()} // Not strictly necessary for a div, but harmless
-              style={{ cursor: 'default' }} // Optional: Visual cue that it's not clickable for navigation
+              className="group block overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-300 ease-out hover:shadow-xl hover:scale-[1.02]"
             >
-              <div className="mb-4 p-4 rounded-full bg-white/50 shadow-md">
-                {category.icon}
+              <div className="relative w-full aspect-[4/3] sm:aspect-square">
+                <Image
+                  src={category.imageSrc}
+                  alt={category.imageAlt}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 639px) 90vw, (max-width: 1023px) 45vw, 22vw"
+                  priority={categories.indexOf(category) < 2} // Prioritize loading for the first few images
+                />
               </div>
-              <h3 className="text-xl font-semibold text-gray-800 group-hover:text-gray-900 transition-colors">
-                {category.name}
-              </h3>
-            </div>
+              <div className="p-5 text-center">
+                <div className={`mx-auto mb-3 inline-flex items-center justify-center p-3 rounded-full ${category.iconBgColor} shadow-sm`}>
+                  <category.icon className={`h-6 w-6 ${category.iconColor}`} />
+                </div>
+                <h3 className="text-lg font-semibold text-neutral-800 transition-colors">
+                  {category.name}
+                </h3>
+              </div>
+            </Link>
           ))}
         </div>
       </div>
