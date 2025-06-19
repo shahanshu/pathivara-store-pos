@@ -8,7 +8,7 @@ export const metadata = {
     template: "%s | sathimart Department Store",
   },
   description: "Discover a wide range of products at My Awesome Department Store. Quality, variety, and unbeatable prices on fashion, electronics, home goods, and more.",
-  keywords: ["ecommerce", "department store", "online shopping", "fashion", "electronics", "home goods", "best deals"],
+  keywords: ["ecommerce", "department store", "online shopping", "fashion", "electronics", "home goods", "best deals","dharan","pathivara","pathivarastore","sathimart","sathi mart","sathi mart department store"],
   openGraph: {
     type: 'website',
     locale: 'en_US',

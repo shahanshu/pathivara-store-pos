@@ -1,36 +1,48 @@
 // app/cashier/layout.js
 'use client';
-
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/app/contexts/AuthContext';
-import LoadingSpinner from '@/app/components/common/LoadingSpinner'; // Assuming you have this
+import LoadingSpinner from '@/app/components/common/LoadingSpinner';
 import Link from 'next/link';
+import { FiLogOut } from 'react-icons/fi'; // Added for logout icon
 
 // Minimal Navbar for Cashier
 const CashierNavbar = () => {
   const { user, logout } = useAuth();
   return (
-    <nav className="bg-green-600 text-white p-3 shadow-md fixed top-0 left-0 right-0 z-50 h-16 flex items-center">
-      <div className="container mx-auto flex justify-between items-center px-4">
-        <Link href="/cashier" className="text-xl font-semibold hover:text-green-100">
+    <nav className="bg-white text-gray-700 p-4 shadow-md fixed top-0 left-0 right-0 z-50 h-16 flex items-center">
+      <div className="container mx-auto flex justify-between items-center px-4 sm:px-6 lg:px-8">
+        <Link href="/cashier" className="text-xl font-bold text-indigo-600 hover:text-indigo-700">
           Sathi Mart - Cashier
         </Link>
         <div>
           {user && (
-            <>
-              <span className="mr-3 text-sm">Welcome, {user.displayName || user.email?.split('@')[0]}</span>
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">
+                Welcome, {user.displayName || user.email?.split('@')[0]}
+              </span>
               <button
                 onClick={logout}
-                className="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-3 rounded text-sm"
+                className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md text-sm inline-flex items-center transition-colors duration-150"
+                title="Logout"
               >
+                <FiLogOut className="mr-2 h-4 w-4" />
                 Logout
               </button>
-            </>
+            </div>
           )}
         </div>
       </div>
     </nav>
+  );
+};
+
+const CashierFooter = () => {
+  return (
+    <footer className="bg-gray-100 text-center py-4 text-sm text-gray-600 border-t">
+      © {new Date().getFullYear()} Sathi Mart. All rights reserved.
+    </footer>
   );
 };
 
@@ -43,7 +55,6 @@ export default function CashierLayout({ children }) {
       if (!user) {
         router.push('/login?redirect=/cashier');
       } else if (selectedRole !== 'cashier' && selectedRole !== 'admin') {
-        // Admins can also access cashier for testing/override
         console.warn("User does not have cashier role or role not selected. Redirecting.");
         router.push('/select-role');
       }
@@ -61,19 +72,19 @@ export default function CashierLayout({ children }) {
           <p className="mt-2 text-sm text-gray-500">Please log in to access the cashier panel.</p>
         )}
         {!loading && user && (selectedRole !== 'cashier' && selectedRole !== 'admin') && (
-            <p className="mt-2 text-sm text-gray-500">You do not have the required role.</p>
+          <p className="mt-2 text-sm text-gray-500">You do not have the required role.</p>
         )}
       </div>
     );
   }
 
-  // User is authenticated and has the cashier (or admin) role selected
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-slate-50">
       <CashierNavbar />
-      <main className="flex-1 pt-20 px-4 pb-4 md:px-6"> {/* Adjusted pt for fixed navbar h-16 + padding */}
+      <main className="flex-1 pt-16"> {/* Adjusted pt for fixed navbar h-16 */}
         {children}
       </main>
+      <CashierFooter />
     </div>
   );
 }
