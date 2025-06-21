@@ -8,7 +8,7 @@ export async function generateMetadata() {
     description: 'The best place to find amazing products online. Explore our curated collections for fashion, electronics, home goods, and more. Shop now for exclusive deals and fast shipping!',
     openGraph: {
       title: 'Sathimart Department Store',
-      description: 'Developed By Anshu Inspired By Mokshadha',
+      description: 'Developed By Anshu',
       url: `${siteBaseUrl}/`,
       images: [
         {

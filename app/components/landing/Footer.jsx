@@ -34,7 +34,7 @@ const Footer = () => {
               Developed by <span className="font-medium">Anshu Shah</span>
             </p>
             <p className="text-xs text-neutral-500"> {/* Subtle text for inspiration */}
-              Inspired by Mokshada
+          
             </p>
           </div>
         </div>
