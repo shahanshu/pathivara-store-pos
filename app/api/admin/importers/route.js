@@ -2,7 +2,7 @@
 // File: app/api/admin/importers/route.js
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
-import { withAdminAuth } from '@/utils/apiAuth'; // Assuming you have this for admin auth
+import { withAdminAuth } from '@/utils/apiAuth';
 
 // GET all importers
 export const GET = withAdminAuth(async function GET(request, { user }) {

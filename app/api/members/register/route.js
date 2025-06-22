@@ -2,13 +2,12 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { withAuth } from '@/utils/withAuth'; // General auth
-import { rtdbAdmin } from '@/lib/firebase-admin'; // For RTDB sync
+import { rtdbAdmin } from '@/lib/firebase-admin'; // For RTDB syn
 import { ObjectId } from 'mongodb';
 
 
 export const POST = withAuth(async function registerMember(request, { user }) {
-  // Check if user has cashier or admin role (assuming selectedRole is part of decodedToken or user object)
-  // Ensure 'user.selectedRole' is available from your withAuth HOC or token claims
+
   const userRole = user.selectedRole || (user.admin ? 'admin' : null);
   if (userRole !== 'cashier' && userRole !== 'admin') {
     return NextResponse.json({ success: false, message: 'Forbidden: Insufficient role' }, { status: 403 });

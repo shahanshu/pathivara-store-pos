@@ -127,23 +127,8 @@ const AdminImportLedgerPage = () => {
                     >
                       <FiEye size={18} />
                     </Link>
-                    {/* Placeholder for future Edit/Delete actions */}
-                    {/*
-                    <button
-                      className="text-yellow-500 hover:text-yellow-700 ml-3 p-1 rounded-full hover:bg-yellow-100 transition-colors duration-150 inline-block disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Edit Import (Coming Soon)"
-                      disabled
-                    >
-                      <FiEdit size={18} />
-                    </button>
-                    <button
-                      className="text-red-500 hover:text-red-700 ml-3 p-1 rounded-full hover:bg-red-100 transition-colors duration-150 inline-block disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Delete Import (Coming Soon)"
-                      disabled
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
-                    */}
+                
+     
                   </td>
                 </tr>
               ))}

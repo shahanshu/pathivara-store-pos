@@ -49,16 +49,7 @@ const categories = [
     iconColor: 'text-purple-600',
     iconBgColor: 'bg-purple-100',
   },
-  // Example of how to add more categories if needed:
-  // {
-  //   name: 'Books & Stationery',
-  //   href: '/shop/books',
-  //   icon: FiBookOpen,
-  //   imageSrc: '/images/books-category.jpg', // Placeholder - you would need books-category.jpg
-  //   imageAlt: 'A collection of books and stationery supplies',
-  //   iconColor: 'text-orange-600',
-  //   iconBgColor: 'bg-orange-100',
-  // },
+
 ];
 
 const ShopByCategorySection = () => {
@@ -92,7 +83,7 @@ const ShopByCategorySection = () => {
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                   sizes="(max-width: 639px) 90vw, (max-width: 1023px) 45vw, 22vw"
-                  priority={categories.indexOf(category) < 2} // Prioritize loading for the first few images
+                  priority={categories.indexOf(category) < 2} 
                 />
               </div>
               <div className="p-5 text-center">
@@ -112,4 +103,3 @@ const ShopByCategorySection = () => {
 };
 
 export default ShopByCategorySection;
-// ----- End of File: app/components/landing/ShopByCategorySection.jsx -----

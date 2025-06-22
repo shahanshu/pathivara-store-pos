@@ -155,7 +155,7 @@ const Navbar = () => {
         </div>
       </motion.nav>
 
-      {/* Mobile Menu Panel and Overlay */}
+   
       <AnimatePresence>
         {isOpen && (
           <>

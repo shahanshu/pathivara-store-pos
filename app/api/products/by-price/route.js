@@ -3,11 +3,6 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { withAuth } from '@/utils/withAuth'; // General auth HOC
 
 export const GET = withAuth(async function getProductsByPrice(request, { user }) {
-  // Optional: Add role check if only specific roles can use this
-  // const userRole = user.selectedRole;
-  // if (userRole !== 'cashier' && userRole !== 'admin') {
-  //   return NextResponse.json({ success: false, message: 'Forbidden: Insufficient role' }, { status: 403 });
-  // }
 
   try {
     const { searchParams } = new URL(request.url);

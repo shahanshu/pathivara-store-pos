@@ -1,9 +1,8 @@
-// ----- File: app/components/landing/AboutUsSection.jsx -----
-// app/components/landing/AboutUsSection.jsx
+
 'use client';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import AnimatedSection from '../AnimatedSection'; // Assuming this component exists and works
+import AnimatedSection from '../AnimatedSection'; 
 import { FiMapPin, FiPhone, FiMail, FiClock } from 'react-icons/fi';
 import { Inter } from 'next/font/google'; // Import Inter font
 
@@ -25,7 +24,7 @@ const AboutUsSection = () => {
       icon: <FiPhone className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />,
       label: 'Call Us',
       text: '9745245005',
-      href: 'tel:+9779745245005', // Assuming Nepal country code
+      href: 'tel:+9779745245005',
     },
     {
       icon: <FiMail className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />,
@@ -57,7 +56,7 @@ const AboutUsSection = () => {
             viewport={{ once: true, amount: 0.3 }}
             transition={{ duration: 0.7, ease: "easeOut" }}
           >
-            {/* Softer shadow and more rounded corners for an iOS feel */}
+           
             <div className="relative aspect-[4/5] sm:aspect-square rounded-2xl shadow-xl shadow-neutral-900/10 overflow-hidden group">
               <Image
                 src="/images/sathimart.jpg" // Ensure this image path is correct
@@ -136,4 +135,3 @@ const AboutUsSection = () => {
 };
 
 export default AboutUsSection;
-// ----- End of File: app/components/landing/AboutUsSection.jsx -----

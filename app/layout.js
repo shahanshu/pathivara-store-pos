@@ -19,7 +19,7 @@ export const metadata = {
     description: 'Discover a wide range of products at Sathi Marth Department Store.',
     images: [
       {
-        url: '/images/sathimart_logo.png', // or full URL if preferred
+        url: '/images/sathimart_logo.png', 
         width: 800,
         height: 600,
         alt: 'Sathimart Department Store Logo',

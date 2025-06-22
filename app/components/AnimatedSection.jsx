@@ -1,6 +1,5 @@
-// ----- File: app/components/AnimatedSection.jsx -----
-// app/components/AnimatedSection.jsx
-'use client'; // Framer Motion components are client components
+
+'use client'; 
 
 import { motion } from 'framer-motion';
 
@@ -39,4 +38,3 @@ const AnimatedSection = ({ children, className, delay = 0, direction = "up", id,
 };
 
 export default AnimatedSection;
-// ----- End of File: app/components/AnimatedSection.jsx -----

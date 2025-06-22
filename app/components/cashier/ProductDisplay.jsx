@@ -25,7 +25,7 @@ export default function ProductDisplay({ product, onAddToCart, isCashierView = f
           <FiArchive className="mr-1"/> This product is currently unavailable.
         </p>
       )}
-      {/* Add to cart button is handled by auto-add or main page for now */}
+ 
     </div>
   );
 }

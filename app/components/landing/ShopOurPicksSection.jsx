@@ -1,4 +1,4 @@
-// ----- File: app/components/landing/ShopOurPicksSection.jsx -----
+
 'use client';
 import AnimatedSection from '../AnimatedSection';
 // import Link from 'next/link'; // Link component is no longer used directly for navigation here
@@ -133,4 +133,3 @@ const ShopOurPicksSection = () => {
 };
 
 export default ShopOurPicksSection;
-// ----- End of File: app/components/landing/ShopOurPicksSection.jsx -----

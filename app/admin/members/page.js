@@ -77,16 +77,7 @@ const AdminMembersPage = () => {
                 <h1 className="text-3xl font-bold text-gray-800 flex items-center">
                     <FiUsers className="mr-3 text-indigo-600" /> Member Management
                 </h1>
-                {/* 
-                Admin might not add members directly often, this is primarily a cashier function.
-                If admin needs to add members, a link to a form page could be added here.
-                <Link
-                    href="/admin/members/new" // Example path for an admin 'add member' page
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded inline-flex items-center shadow"
-                >
-                    <FiPlusCircle className="mr-2" /> Add New Member
-                </Link> 
-                */}
+           
             </div>
 
             {error && <p className="text-red-600 bg-red-100 p-4 rounded mb-4 shadow">Error: {error}</p>}
@@ -111,9 +102,7 @@ const AdminMembersPage = () => {
                                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiPhone className="inline mr-1 mb-px"/>Phone Number</th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 text-right text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiDollarSign className="inline mr-1 mb-px"/>Total Purchase</th>
                                 <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider"><FiCalendar className="inline mr-1 mb-px"/>Joined On</th>
-                                {/* Future actions column
-                                <th className="px-5 py-3 border-b-2 border-gray-200 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-                                */}
+                               
                             </tr>
                         </thead>
                         <tbody>
@@ -131,24 +120,7 @@ const AdminMembersPage = () => {
                                     <td className="px-5 py-4 border-b border-gray-200 text-sm">
                                         <p className="text-gray-900 whitespace-no-wrap">{formatDate(member.createdAt)}</p>
                                     </td>
-                                    {/* 
-                                    <td className="px-5 py-4 border-b border-gray-200 text-sm whitespace-nowrap">
-                                        <button title="View Details" className="text-blue-600 hover:text-blue-800 mr-3 p-1 hover:bg-blue-100 rounded-full transition-colors">
-                                            <FiEye size={18} />
-                                        </button>
-                                        <button title="Edit Member" className="text-yellow-500 hover:text-yellow-700 mr-3 p-1 hover:bg-yellow-100 rounded-full transition-colors">
-                                            <FiEdit size={18} />
-                                        </button>
-                                        // Delete action might be risky for admin, consider soft delete or restricted access
-                                        // <button 
-                                        //     title="Delete Member (Caution!)" 
-                                        //     className="text-red-500 hover:text-red-700 p-1 hover:bg-red-100 rounded-full transition-colors"
-                                        //     onClick={() => handleDeleteMember(member._id, member.name)}
-                                        // >
-                                        //     <FiTrash2 size={18} />
-                                        // </button>
-                                    </td> 
-                                    */}
+            
                                 </tr>
                             ))}
                         </tbody>

@@ -1,15 +1,14 @@
-// ----- File: app/components/landing/CallToActionSection.jsx -----
-// app/components/landing/CallToActionSection.jsx
+
 'use client';
 import Link from 'next/link';
 import AnimatedSection from '../AnimatedSection';
-import { FiMapPin, FiGift } from 'react-icons/fi'; // FiGift is used for View Our Specials
+import { FiMapPin, FiGift } from 'react-icons/fi'; 
 import { motion } from 'framer-motion';
 
 const CallToActionSection = () => {
   return (
     <AnimatedSection
-      className="bg-primary text-gray-800 py-16 sm:py-24" // text-gray-800 was already there
+      className="bg-primary text-gray-800 py-16 sm:py-24" 
       direction="left"
     >
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -39,11 +38,7 @@ const CallToActionSection = () => {
           className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6"
         >
           <Link
-            href="/#about-us" // This button was for "Get Directions" - kept pointing to #about-us as per previous intention
-            // To be clear: the "Get Directions" button now points to "About Us".
-            // If it should point elsewhere, this href needs to change.
-            // Based on your last request, "View Our Specials" (the second button) points to about.
-            // Let's assume the first button can also point to about or a map link. For now, it's #about-us.
+            href="/#about-us" 
             className="inline-flex items-center justify-center bg-white hover:bg-gray-100 text-primary font-semibold py-3 px-8 rounded-lg text-md shadow-md transition-colors duration-300 w-full sm:w-auto"
           >
             <FiMapPin className="mr-2 h-5 w-5" /> Get Directions
@@ -51,8 +46,7 @@ const CallToActionSection = () => {
           <Link
             href="/#about-us" // MODIFIED: "View Our Specials" now navigates to AboutUsSection
             className="inline-flex items-center justify-center border-2 border-secondary hover:bg-secondary/10 text-secondary font-semibold py-3 px-8 rounded-lg text-md shadow-md transition-colors duration-300 w-full sm:w-auto"
-            // Ghost button alternative classes were commented out, keeping the secondary style
-            // className="inline-flex items-center justify-center border-2 border-gray-700 hover:bg-gray-700/10 text-gray-700 font-semibold py-3 px-8 rounded-lg text-md shadow-md transition-colors duration-300 w-full sm:w-auto"
+          
           >
             <FiGift className="mr-2 h-5 w-5" /> View Our Specials
           </Link>
@@ -63,4 +57,3 @@ const CallToActionSection = () => {
 };
 
 export default CallToActionSection;
-// ----- End of File: app/components/landing/CallToActionSection.jsx -----

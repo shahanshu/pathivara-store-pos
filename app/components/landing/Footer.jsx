@@ -1,7 +1,7 @@
-// ----- File: app/components/landing/Footer.jsx -----
+
 'use client';
 import { motion } from 'framer-motion';
-import { Inter } from 'next/font/google'; // Changed from Ubuntu
+import { Inter } from 'next/font/google'; 
 
 // Initialize Inter font with weights common in iOS-style UI
 const inter = Inter({
@@ -39,15 +39,10 @@ const Footer = () => {
           </div>
         </div>
 
-        {/* Divider and Copyright Section - common pattern in modern footers */}
-        <div className="mt-8 sm:mt-10 border-t border-neutral-200 pt-6 sm:pt-8 text-center"> {/* Subtle divider, generous spacing */}
+        <div className="mt-8 sm:mt-10 border-t border-neutral-200 pt-6 sm:pt-8 text-center"> 
           <p className="text-xs text-neutral-500">
             Copyright © {currentYear} SATHIMART. All Rights Reserved.
-            {/* Example of how Apple-style links could be added: */}
-            {/* <span className="mx-1.5 hidden sm:inline">|</span>
-            <a href="/privacy-policy" className="hover:text-neutral-700 transition-colors">Privacy Policy</a>
-            <span className="mx-1.5 hidden sm:inline">|</span>
-            <a href="/terms-of-service" className="hover:text-neutral-700 transition-colors">Terms of Service</a> */}
+
           </p>
         </div>
       </div>
@@ -56,4 +51,3 @@ const Footer = () => {
 };
 
 export default Footer;
-// ----- End of File: app/components/landing/Footer.jsx -----

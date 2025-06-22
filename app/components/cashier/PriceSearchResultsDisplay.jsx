@@ -24,10 +24,7 @@ export default function PriceSearchResultsDisplay({ products, onSelectProduct, f
               <p className="text-xs sm:text-sm text-gray-500">
                 Barcode: {product.barcode} | Stock: {product.currentStock}
               </p>
-              {/* Price is already known, but can be displayed for confirmation if desired */}
-              {/* <p className="text-xs sm:text-sm text-indigo-600 font-semibold">
-                Price: {formatCurrency(product.price)}
-              </p> */}
+          
             </div>
             <button
               onClick={() => onSelectProduct(product)}

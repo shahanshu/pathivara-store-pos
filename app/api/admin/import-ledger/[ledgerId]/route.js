@@ -78,7 +78,7 @@ export const GET = withAdminAuth(async function GET(request, context) {
           createdAt: { $first: '$createdAt' },
           userId: { $first: '$userId' }, // Assuming you have this field
           importerInfo: { $first: '$importerInfo' }, // Get the populated importer info
-          items: { $push: '$items' } // Push processed items (now with productDetails) back
+          items: { $push: '$items' } 
         }
       }
     ]).toArray();

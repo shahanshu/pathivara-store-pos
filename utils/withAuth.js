@@ -15,12 +15,9 @@ export function withAuth(handler) {
     try {
       const decodedToken = await admin.auth().verifyIdToken(idToken);
       
-      // No admin-specific check here. 
-      // We just ensure the token is valid and pass the decoded user info.
-      // Specific permissions will be handled by the API route logic or Firebase Rules.
+
 
       const newContext = { ...context, user: decodedToken };
-      // console.log('withAuth: Token verified, user context:', JSON.stringify(decodedToken, null, 2));
       return handler(request, newContext);
 
     } catch (error) {

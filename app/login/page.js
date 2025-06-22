@@ -5,8 +5,7 @@ import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuth } from '@/app/contexts/AuthContext';
-// Head component is not used in this snippet, remove if not needed or add <Head /> in JSX
-// import Head from 'next/head';
+
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');

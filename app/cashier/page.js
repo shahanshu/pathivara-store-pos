@@ -11,7 +11,7 @@ import CartDisplay from '@/app/components/cashier/CartDisplay';
 import CustomerLookup from '@/app/components/cashier/CustomerLookup';
 import RecentTransactions from '@/app/components/cashier/RecentTransactions';
 import ReturnEditModal from '@/app/components/cashier/ReturnEditModal';
-// RegisterMemberForCheckoutModal is removed as per your request
+
 import LoadingSpinner from '@/app/components/common/LoadingSpinner';
 import {
   FiXCircle, FiCheckCircle, FiShoppingCart, FiDollarSign, FiTrash2,

@@ -31,7 +31,7 @@ const LoadingSpinner = ({ size = 'md', color = 'indigo' }) => {
 
   return (
     <div className={`relative ${sizeClasses[size]}`}>
-      {/* Outer spinner ring */}
+    
       <div 
         className={`absolute inset-0 rounded-full border-2 ${colorClasses[color]} animate-spin`}
         style={{ 
@@ -40,7 +40,7 @@ const LoadingSpinner = ({ size = 'md', color = 'indigo' }) => {
         }}
       />
       
-      {/* Inner spinner ring with delay */}
+
       <div 
         className={`absolute inset-1 rounded-full border-2 ${colorClasses[color]} animate-spin ${animationDelays[size]}`}
         style={{ 
@@ -49,7 +49,7 @@ const LoadingSpinner = ({ size = 'md', color = 'indigo' }) => {
         }}
       />
       
-      {/* Accessibility text */}
+
       <span className="sr-only">Loading...</span>
     </div>
   );

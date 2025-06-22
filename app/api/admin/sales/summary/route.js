@@ -2,7 +2,7 @@
 
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
-import { withAdminAuth } from '@/utils/apiAuth'; // Using your existing admin auth HOC
+import { withAdminAuth } from '@/utils/apiAuth'; // Using  existing admin auth HOC
 
 export const GET = withAdminAuth(async function GET(request, { user }) {
   try {

@@ -4,7 +4,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/app/contexts/AuthContext';
-import LoadingSpinner from '@/app/components/common/LoadingSpinner'; // Assuming you have this
+import LoadingSpinner from '@/app/components/common/LoadingSpinner'; 
 import { useRouter } from 'next/navigation';
 
 const NewImporterPage = () => {

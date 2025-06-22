@@ -135,11 +135,11 @@ const ImportLedgerDetailPage = () => {
               </thead>
               <tbody>
                 {entry.items.map((item, index) => (
-                  <tr key={item.productId + '-' + index} className="hover:bg-gray-50"> {/* Use a more unique key if possible */}
+                  <tr key={item.productId + '-' + index} className="hover:bg-gray-50">
                     <td className="px-3 py-2 border-b border-gray-200">{index + 1}</td>
                     <td className="px-3 py-2 border-b border-gray-200">
                       {item.productDetails?.name || item.productName || 'N/A'}
-                      {/* {item.isNewProduct && <span className="ml-1 text-xs text-blue-500">(New at import)</span>} */}
+               
                     </td>
                     <td className="px-3 py-2 border-b border-gray-200">{item.productDetails?.barcode || item.barcode || 'N/A'}</td>
                     <td className="px-3 py-2 border-b border-gray-200 text-right">{item.quantityImported}</td>

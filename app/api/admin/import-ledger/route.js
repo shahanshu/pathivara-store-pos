@@ -3,8 +3,7 @@ import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { withAdminAuth } from '@/utils/apiAuth';
-import { syncProductToRTDB, updateProductInRTDB } from '@/lib/firebaseSync'; // Assuming updateProductInRTDB exists or we use syncProductToRTDB
-
+import { syncProductToRTDB, updateProductInRTDB } from '@/lib/firebaseSync'; 
 export const POST = withAdminAuth(async function POST(request, { user }) {
     console.log("API: Received POST request to /api/admin/import-ledger");
     const { db } = await connectToDatabase();

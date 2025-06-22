@@ -1,5 +1,4 @@
-// ----- File: app/components/landing/HeroSection.jsx -----
-// app/components/landing/HeroSection.jsx
+
 'use client';
 import { motion } from 'framer-motion';
 import { FiArrowRight } from 'react-icons/fi';
@@ -62,4 +61,3 @@ const HeroSection = () => {
 };
 
 export default HeroSection;
-// ----- End of File: app/components/landing/HeroSection.jsx -----
